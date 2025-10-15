@@ -1,0 +1,20 @@
+{
+  "name": "keyhook-booking-ws-multiusers",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm:server:dev\" \"npm:client:dev\"",
+    "server:dev": "ts-node-dev --respawn --transpile-only server/server.ts",
+    "client:dev": "cd client && parcel src/index.html --port 1234"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.1.6",
+    "parcel": "^2.9.3",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/sequelize": "^4.28.20",
+    "@types/ws": "^8.18.1"
+  }
+}
