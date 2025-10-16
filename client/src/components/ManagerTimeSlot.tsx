@@ -25,7 +25,7 @@ export default function ManagerTimeSlot({ slot, bookingId, userName, currentDate
   const handleEdit = () => {
     const body = {
       ...newSlot,
-      selectedDate: !newSlot.selectedDate && newSlot.daysOfWeek?.length === 0 
+      selectedDate: newSlot.selectedDate?.length === 0  && newSlot.daysOfWeek?.length === 0 
         ? currentDateString 
         : newSlot.selectedDate
     }
@@ -53,13 +53,10 @@ export default function ManagerTimeSlot({ slot, bookingId, userName, currentDate
     <div className="flex flex-wrap items-start justify-between">
       <TimeSlotEdit
         edit={edit} 
-        slot={slot} 
+        slot={newSlot} 
         userName={userName} 
         currentDateString={currentDateString} 
-        onChange={newSlot => setNewSlot(prev => ({
-          ...prev,
-          ...newSlot
-        }))}
+        onChange={newState => setNewSlot(newState)}
       />
       <div className="flex flex-col">
         {bookingId

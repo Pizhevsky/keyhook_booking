@@ -2,16 +2,18 @@ import React from 'react';
 import ManagerTimeSlot from './ManagerTimeSlot';
 import { UserScheduleProps } from '../types';
 import TimeSlotCreate from './TimeSlotCreate';
+import { arrayToObjectByKey } from '../utils/transforms';
 
 export default function ManagerSchedule({ currentDateString, users, slots, books }: UserScheduleProps) {
+  const usersById = arrayToObjectByKey('id', users);
+  const booksBySlotId = arrayToObjectByKey('slotId', books);
+
   return (
     <div className="space-y-4">
       {slots.length
         ? slots.map(slot => {
-            const booking = books.find(book => book.slotId === slot.id);
-            const tenant = booking 
-              ? users.find(user => user.id === booking.tenantId)
-              : undefined;
+            const booking = booksBySlotId[slot.id];
+            const tenant = booking && usersById[booking.tenantId];
 
             return (
               <div key={slot.id} className="p-4 rounded-lg bg-white border">
@@ -26,7 +28,9 @@ export default function ManagerSchedule({ currentDateString, users, slots, books
           })
         : <div>No slots</div>
       }
-      <TimeSlotCreate currentDateString={currentDateString}/>
+      <div className="flex flex-row-reverse mr-3">
+        <TimeSlotCreate currentDateString={currentDateString}/>
+      </div>
     </div>
   );
 }

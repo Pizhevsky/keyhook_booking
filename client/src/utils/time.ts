@@ -23,7 +23,7 @@ export function checkBookingDate(date: string, time: string, timezone: string) {
   }
 }
 
-export function  getDateByTimezone (date: string, time: string, timezone: string) {
+export function getDateByTimezone (date: string, time: string, timezone: string) {
   return dayjs(`${date} ${time}`, "DD/MM/YYYY HH:mm").tz(timezone)
 }
 

@@ -34,6 +34,7 @@ export default function TimeSlotCreate({ currentDateString }: TimeSlotCreateProp
     addAvailability(body).then(() => {
       toast.success('Created'); 
       setEdit(false); 
+      setSlot(defaultSlot);
     }).catch((e) => {
       toast.error(`Failed create: ${e.response.data.error}`); 
     });
@@ -44,13 +45,10 @@ export default function TimeSlotCreate({ currentDateString }: TimeSlotCreateProp
         <div className="flex flex-wrap items-start justify-between justify-items-stretch">
           <TimeSlotEdit 
             edit={true}
-            slot={defaultSlot}
+            slot={slot}
             currentDateString={currentDateString}
             userName={'Manager slot'}
-            onChange={slot => setSlot(prev => ({
-              ...prev,
-              ...slot
-            }))}
+            onChange={newState => setSlot(newState)}
           />
           <div className="flex flex-col gap-2">
             <button className="px-3 py-1 w-20 bg-blue-600 text-white rounded" onClick={() => handleCreate()}>
@@ -62,7 +60,7 @@ export default function TimeSlotCreate({ currentDateString }: TimeSlotCreateProp
           </div>
         </div>
       </div>
-    : <button className={`px-3 py-1 rounded bg-green-600 text-white`} onClick={() => setEdit(true)}>
+    : <button className="px-3 py-1 rounded bg-green-600 text-white right-0" onClick={() => setEdit(true)}>
         {'Add Slot'}
       </button>
   );

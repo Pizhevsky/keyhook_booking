@@ -16,6 +16,10 @@ export default function TimeSlotEdit({ edit, slot, userName, currentDateString, 
   const [newSlot, setNewSlot] = useState(slot);
 
   useEffect(() => {
+    setNewSlot(slot);
+  }, [slot]);
+
+  useEffect(() => {
     onChange(newSlot);
   }, [newSlot]);
 

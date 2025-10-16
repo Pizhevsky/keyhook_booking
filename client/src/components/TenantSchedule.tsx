@@ -1,31 +1,19 @@
 import React, { useContext } from 'react';
 import toast from 'react-hot-toast';
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
 import { checkBookingDate, getDateByTimezone, localTZ } from '../utils/time';
 import { bookSlot } from '../api';
 import { Availability, UserScheduleProps } from '../types';
 import { Avatar } from '@mui/material';
 import { UserContext } from '../contexts/UserContext';
 import BookingCancel from './BookingCancel';
+import { arrayToObjectByKey } from '../utils/transforms';
 
-dayjs.extend(utc);
-dayjs.extend(timezone);
 
 export default function TenantSchedule({ currentDateString, users, slots, books }: UserScheduleProps) {
   const { user } = useContext(UserContext);
-
-  const usersById = users.reduce<Record<number, typeof users[number]>>((obj, user) => {
-    obj[user.id] = user;
-    return obj;
-  }, {});
-
-  const booksBySlotId = books.reduce<Record<number, typeof books[number]>>((obj, book) => {
-    obj[book.slotId] = book;
-    return obj;
-  }, {});
-
+  const usersById = arrayToObjectByKey('id', users);
+  const booksBySlotId = arrayToObjectByKey('slotId', books);
+  
   const handleBook = (slot: Availability) => {
     const check = checkBookingDate(currentDateString, slot.startTime, slot.timezone);
     if (check) {
