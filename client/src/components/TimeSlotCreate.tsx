@@ -60,7 +60,7 @@ export default function TimeSlotCreate({ currentDateString }: TimeSlotCreateProp
           </div>
         </div>
       </div>
-    : <button className="px-3 py-1 rounded bg-green-600 text-white right-0" onClick={() => setEdit(true)}>
+    : <button className="px-3 py-1 rounded bg-green-600 text-white mt-4 mr-3" onClick={() => setEdit(true)}>
         {'Add Slot'}
       </button>
   );

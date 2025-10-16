@@ -28,7 +28,7 @@ export default function ManagerSchedule({ currentDateString, users, slots, books
           })
         : <div>No slots</div>
       }
-      <div className="flex flex-row-reverse mr-3">
+      <div className="flex flex-row-reverse">
         <TimeSlotCreate currentDateString={currentDateString}/>
       </div>
     </div>
