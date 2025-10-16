@@ -38,13 +38,14 @@ export default function TimeSelect({start, end, onChange}: TimeSelectProps) {
   }, [startValue, endValue]);
 
   return (
-    <div className="flex flex-col gap-4 mt-4">
+    <div className="flex flex-row gap-1 items-center mt-2 -ml-3">
       <TimePicker
         label="Start"
         slotProps={style}
         value={startValue}
         onChange={(newValue) => setStartValue(newValue)}
       />
+      -
       <TimePicker
         label="End"
         slotProps={style}

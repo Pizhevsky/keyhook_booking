@@ -13,7 +13,7 @@ export interface Availability {
   selectedDate: string; 
   startTime: string;
   endTime: string;
-  timeZone: string;
+  timezone: string;
 }
 
 export interface Booking {
@@ -26,7 +26,18 @@ export interface Booking {
 
 export interface AppState { 
   users: User[];
-  currentUserId: number;
   availability: Availability[];
   bookings: Booking[];
+}
+
+export interface UserScheduleProps {
+  currentDateString: string;
+  slots: Availability[];
+  books: Booking[];
+  users: User[];
+}
+
+export type SlotsAndBooks = {
+  slots: Availability[],
+  books: Booking[]
 }

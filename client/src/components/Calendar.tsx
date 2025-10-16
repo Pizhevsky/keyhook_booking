@@ -1,7 +1,7 @@
 import React from 'react';
 import { DateCalendar } from '@mui/x-date-pickers';
 import { styled } from '@mui/material';
-import { Availability, Booking } from '../types';
+import { SlotsAndBooks } from '../types';
 import dayjs, { Dayjs } from 'dayjs';
 import updateLocale from 'dayjs/plugin/updateLocale'
 import CalendarBookingDay from './CalendarBookingDay';
@@ -13,9 +13,8 @@ dayjs.updateLocale('en', {
 
 interface CalendarProps {
   date: Dayjs;
-  availability: Availability[];
-  bookings: Booking[];
-  onChange: (date: any) => void;
+  day: SlotsAndBooks;
+  onChange: (date: Dayjs) => void;
 }
 
 const StyledDateCalendar = styled(DateCalendar)({
@@ -44,23 +43,19 @@ const StyledDateCalendar = styled(DateCalendar)({
   },
 });
 
-export default function Calendar({ date, availability, bookings, onChange }: CalendarProps) {
-  
-  const day: any = {
-    availability,
-    bookings
-  }
-  const slotProps: any = {
-    actionBar: {
-      actions: ['clear'],
-    },
-    day,
-  }
+export default function Calendar({ date, day, onChange }: CalendarProps) {
+  const slotProps: any = { day };
+
+  const handleChange = (value: Dayjs | null) => {
+    if (value) {
+      onChange(value);
+    }
+  };
 
   return (
     <StyledDateCalendar 
       value={date} 
-      onChange={onChange}
+      onChange={handleChange}
       slots={{ day: CalendarBookingDay }}
       slotProps={slotProps}
     />

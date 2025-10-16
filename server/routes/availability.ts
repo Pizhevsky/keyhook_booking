@@ -12,8 +12,8 @@ router.get('/', async (req, res) => {
 });
 
 router.post('/', checkManagerRole, async (req, res) => {
-  const { managerId, selectedDate, daysOfWeek, startTime, endTime, timeZone } = req.body;
-  if ((!daysOfWeek && !selectedDate) || !startTime || !endTime || !timeZone) {
+  const { managerId, selectedDate, daysOfWeek, startTime, endTime, timezone } = req.body;
+  if ((!daysOfWeek && !selectedDate) || !startTime || !endTime || !timezone) {
     return res.status(400).json({ error: 'Invalid' });
   }
 
@@ -23,7 +23,7 @@ router.post('/', checkManagerRole, async (req, res) => {
   const dup = await Availability.findOne({ where: { managerId, selectedDate, daysOfWeek, startTime, endTime } });
   if (dup) return res.status(409).json({ error: 'Duplicate slot' });
 
-  const created = await Availability.create({ managerId, selectedDate, daysOfWeek, startTime, endTime, timeZone });
+  const created = await Availability.create({ managerId, selectedDate, daysOfWeek, startTime, endTime, timezone });
 
   broadcast({ type: 'AVAILABILITY_CREATED', payload: created });
   res.status(201).json(created);
@@ -31,7 +31,7 @@ router.post('/', checkManagerRole, async (req, res) => {
 
 router.put('/:id', async (req, res) => {
   const id = Number(req.params.id);
-  const { managerId, selectedDate, daysOfWeek, startTime, endTime, timeZone } = req.body;
+  const { managerId, selectedDate, daysOfWeek, startTime, endTime, timezone } = req.body;
 
   const slot = await Availability.findByPk(id);
   if (!slot) return res.status(404).json({ error: 'Slot not found' });
@@ -48,7 +48,7 @@ router.put('/:id', async (req, res) => {
     daysOfWeek: daysOfWeek,
     startTime: startTime || slot.startTime, 
     endTime: endTime || slot.endTime, 
-    timeZone: timeZone || slot.timeZone 
+    timezone: timezone || slot.timezone 
   });
   const updated = await Availability.findByPk(id);
 

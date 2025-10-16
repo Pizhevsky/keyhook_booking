@@ -1,73 +1,51 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
+import React, { useContext } from 'react';
 import toast from 'react-hot-toast';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
-import { getDayOfWeek, localTZ } from '../utils/time';
-import { RootState } from '../store';
-import { bookSlot, deleteBooking } from '../api';
-import { Availability, Booking, User } from '../types';
+import { checkBookingDate, getDateByTimezone, localTZ } from '../utils/time';
+import { bookSlot } from '../api';
+import { Availability, UserScheduleProps } from '../types';
 import { Avatar } from '@mui/material';
+import { UserContext } from '../contexts/UserContext';
+import BookingCancel from './BookingCancel';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-const getDateByTimezone = (date: string, time: string, timezone: string) => {
-  return dayjs(`${date} ${time}`, "DD/MM/YYYY HH:mm").tz(timezone)
-}
+export default function TenantSchedule({ currentDateString, users, slots, books }: UserScheduleProps) {
+  const { user } = useContext(UserContext);
 
-export default function TenantSchedule({ date, currentUser }: { date: Dayjs; currentUser: User }) {
-  const { users, availability, bookings } = useSelector((state: RootState) => state.app);
-  
-  const selectedDay = getDayOfWeek(date);
-  const currentDateString = date.format("DD/MM/YYYY");
-  const slots = availability.filter(item => 
-    item.daysOfWeek.includes(selectedDay) ||
-    item.selectedDate === currentDateString
-  ).sort((a,b) => a.startTime.localeCompare(b.startTime));
-  const bookingsForDay = bookings.filter(item => 
-    item.bookDate === currentDateString &&
-    item.tenantId === currentUser.id
-  );
+  const usersById = users.reduce<Record<number, typeof users[number]>>((obj, user) => {
+    obj[user.id] = user;
+    return obj;
+  }, {});
+
+  const booksBySlotId = books.reduce<Record<number, typeof books[number]>>((obj, book) => {
+    obj[book.slotId] = book;
+    return obj;
+  }, {});
 
   const handleBook = (slot: Availability) => {
-    try {
-      const str = `${currentDateString} ${slot.startTime}`;
-      const startLocal = dayjs(str, "DD/MM/YYYY HH:mm").tz(slot.timeZone);
-      if (startLocal.isBefore(dayjs().tz(localTZ))) { 
-        return toast.error('Cannot book past slot in your local time'); 
-      }
-    } catch (e) {
-        return toast.error('Time parsing error'); 
+    const check = checkBookingDate(currentDateString, slot.startTime, slot.timezone);
+    if (check) {
+      toast.error(check);
+      return;
     }
-
-    bookSlot(slot.id, currentDateString, currentUser.id, localTZ).then(() => {
+    bookSlot(slot.id, currentDateString, user.id, localTZ).then(() => {
       toast.success('Booked');
     }).catch((e) => {
       toast.error(`Booking failed: ${e.response.data.error}`); 
     });
   };
 
-  const handleCancel = (booking: Booking) => {
-    if (booking.id) {
-      deleteBooking(booking.id).then(() => {
-        toast.success('Cancelled');
-      }).catch((e) => {
-        toast.error(`Failed to cancel: ${e.response.data.error}`); 
-      });
-    } else {
-      toast.error('Booking Id not found'); 
-    }
-  }
-
   return (
     <div>
       <div className="space-y-4">
         {slots.length
           ? slots.map(slot => {
-              const manager = users.find(user => user.id === slot.managerId);
-              const booking = bookingsForDay.find(book => book.slotId === slot.id);
+              const manager = usersById[slot.managerId];
+              const booking = booksBySlotId[slot.id];
 
               return (
                 <div key={slot.id} className={`p-4 rounded-lg ${booking ? 'bg-gray-100' : 'bg-white'} flex items-center justify-between border`}>
@@ -75,21 +53,16 @@ export default function TenantSchedule({ date, currentUser }: { date: Dayjs; cur
                     <Avatar>{manager ? manager.name[0] : 'M'}</Avatar>
                     <div>
                       <div className="font-medium">
-                        <span>{getDateByTimezone(currentDateString, slot.startTime, slot.timeZone).format('HH:mm')}</span>
+                        <span>{getDateByTimezone(currentDateString, slot.startTime, slot.timezone).format('HH:mm')}</span>
                         <span>&nbsp;-&nbsp;</span>
-                        <span>{getDateByTimezone(currentDateString, slot.endTime, slot.timeZone).format('HH:mm')}</span>
+                        <span>{getDateByTimezone(currentDateString, slot.endTime, slot.timezone).format('HH:mm')}</span>
                       </div>
                       <div className="text-sm text-gray-500">{manager?.name}</div>
                     </div>
                   </div>
                   <div>
                     {booking
-                      ? <>
-                          <span className="px-3 py-1 text-red-600 rounded">Booked</span>
-                          <button className="px-3 py-1 rounded bg-gray-300" onClick={() => handleCancel(booking)}>
-                            Cancel
-                          </button>
-                        </>
+                      ? <BookingCancel bookingId={booking.id} />
                       : <button className="px-3 py-1 rounded bg-blue-600 text-white" onClick={() => handleBook(slot)}>
                           Book
                         </button>

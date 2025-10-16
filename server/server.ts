@@ -19,9 +19,9 @@ setBroadcast(broadcast);
       { name: 'Manager Jane', role: 'manager' }
     ]);
     await Availability.bulkCreate([
-      { managerId: 3, daysOfWeek: '1;5', selectedDate: '', startTime: '10:00', endTime: '12:00', timeZone: 'Pacific/Auckland' },
-      { managerId: 4, daysOfWeek: '3', selectedDate: '', startTime: '14:00', endTime: '16:00', timeZone: 'Pacific/Auckland' },
-      { managerId: 3, daysOfWeek: '5', selectedDate: '', startTime: '13:00', endTime: '14:00', timeZone: 'Pacific/Auckland' }
+      { managerId: 3, daysOfWeek: '1;5', selectedDate: '', startTime: '10:00', endTime: '12:00', timezone: 'Pacific/Auckland' },
+      { managerId: 4, daysOfWeek: '3', selectedDate: '', startTime: '14:00', endTime: '16:00', timezone: 'Pacific/Auckland' },
+      { managerId: 3, daysOfWeek: '5', selectedDate: '', startTime: '13:00', endTime: '14:00', timezone: 'Pacific/Auckland' }
     ]);
   }
 })();

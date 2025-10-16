@@ -27,9 +27,10 @@ router.post('/', async (req, res) => {
   if (!slot) return res.status(404).json({ error: 'Slot not found' });
 
   try {
-    const tenantDate = `${bookDate} ${slot.startTime}`;
-    const tenantStart = dayjs(tenantDate, "DD/MM/YYYY HH:mm").tz(tenantTimezone);
-    if (tenantStart.isBefore(dayjs().tz(slot.timeZone))) { 
+    const slotDate = `${bookDate} ${slot.startTime}`;
+    const slotStart = dayjs(slotDate, "DD/MM/YYYY HH:mm").tz(slot.timezone);
+    const tenantStart = dayjs().tz(tenantTimezone);
+    if (tenantStart.isBefore(slotStart)) { 
       return res.status(400).json({ error: 'Slot is in the past for tenant timezone' });
     }
   } catch (e) {

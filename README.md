@@ -29,7 +29,7 @@ a TypeScript and Express backend using SQLite and Sequelize.
 
 ## Production notes
 For production needs some improvements: 
-components logic, errors validation, Typescript on backend,
+slot's time periods intersections, errors validation, Typescript on backend,
 auth, PostgreSQL, WebSockets security, unit + integration + E2E tests.
 
 ## Demo steps

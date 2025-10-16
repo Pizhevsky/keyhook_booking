@@ -2,8 +2,7 @@ import { configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { AppState, User, Availability, Booking } from '../types';
 
 const initialState: AppState = { 
-  users: [], 
-  currentUserId: 1,
+  users: [],
   availability: [], 
   bookings: [] 
 };
@@ -20,9 +19,6 @@ const slice = createSlice({
         ...state.users,
         action.payload
       ]; 
-    },
-    setCurrentUser(state, action: PayloadAction<number>) { 
-      state.currentUserId = action.payload; 
     },
     setAvailability(state, action: PayloadAction<Availability[]>) { 
       state.availability = action.payload; 
@@ -47,7 +43,10 @@ const slice = createSlice({
       state.bookings = action.payload; 
     },
     addBooking(state, action: PayloadAction<Booking>) { 
-      state.bookings.push(action.payload);
+      state.bookings = [
+        ...state.bookings,
+        action.payload
+      ];
     },
     removeBooking(state, action: PayloadAction<number>) { 
       state.bookings = state.bookings.filter(item => item.id !== action.payload);
@@ -57,8 +56,7 @@ const slice = createSlice({
 
 export const { 
   setUsers, 
-  addUser, 
-  setCurrentUser, 
+  addUser,  
   setAvailability, 
   addAvailability,
   updateAvailability,

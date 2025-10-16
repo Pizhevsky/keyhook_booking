@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { deleteAvailability, deleteBooking, updateAvailability } from '../api';
+import { deleteAvailability, updateAvailability } from '../api';
 import { Availability } from '../types';
-import ManagerTimeSlotEdit from './ManagerTimeSlotEdit';
+import TimeSlotEdit from './TimeSlotEdit';
+import BookingCancel from './BookingCancel';
 
 interface ManagerTimeSlotProps { 
   slot: Partial<Availability>;
@@ -15,27 +16,21 @@ export default function ManagerTimeSlot({ slot, bookingId, userName, currentDate
   const [edit, setEdit] = useState(false);
   const [newSlot, setNewSlot] = useState(slot);
 
-  const handleCancel = (bookingId: number | undefined) => {
+  useEffect(() => {
     if (bookingId) {
-      deleteBooking(bookingId).then(() => {
-        toast.success('Cancelled'); 
-      }).catch((e) => { 
-        toast.error(`Failed to cancel: ${e.response.data.error}`); 
-      });
-    } else {
-      toast.error('Booking Id not found'); 
+      setEdit(false);
     }
-  };
+  }, [bookingId])
 
   const handleEdit = () => {
-    const fix = {
+    const body = {
       ...newSlot,
       selectedDate: !newSlot.selectedDate && newSlot.daysOfWeek?.length === 0 
         ? currentDateString 
         : newSlot.selectedDate
     }
-    setNewSlot(fix);
-    updateAvailability(fix).then(() => {
+    setNewSlot(body);
+    updateAvailability(body).then(() => {
       toast.success('Updated'); 
       setEdit(false); 
     }).catch((e) => {
@@ -44,8 +39,8 @@ export default function ManagerTimeSlot({ slot, bookingId, userName, currentDate
   };
 
   const handleDelete = () => {
-    if (newSlot.id) {
-      deleteAvailability(newSlot.id).then(() => {
+    if (slot.id) {
+      deleteAvailability(slot.id).then(() => {
         toast.success('Deleted'); 
         setEdit(false); 
       }).catch((e) => {
@@ -55,8 +50,8 @@ export default function ManagerTimeSlot({ slot, bookingId, userName, currentDate
   }
 
   return (
-    <div className="flex flex-wrap items-start justify-between justify-items-stretch">
-      <ManagerTimeSlotEdit
+    <div className="flex flex-wrap items-start justify-between">
+      <TimeSlotEdit
         edit={edit} 
         slot={slot} 
         userName={userName} 
@@ -66,33 +61,28 @@ export default function ManagerTimeSlot({ slot, bookingId, userName, currentDate
           ...newSlot
         }))}
       />
-      <div className="flex mb-4">
+      <div className="flex flex-col">
         {bookingId
-          ? <>
-              <span className="px-3 py-1 text-red-600 rounded">Booked</span>
-              <button className="ml-2 px-3 py-1 bg-gray-200 rounded" onClick={() => handleCancel(bookingId)}>
-                Cancel
-              </button>
-            </>
+          ? <BookingCancel bookingId={bookingId} />
           : edit
-            ? <>
-                <button className="ml-2 px-3 py-1 bg-gray-200 rounded" onClick={() => setEdit(false)}>
-                  Cancel
-                </button>
-                <button className="ml-2 px-3 py-1 bg-blue-600 text-white rounded" onClick={() => handleEdit()}>
+            ? <div className="flex flex-col gap-2">
+                <button className="px-3 py-1 w-20 bg-blue-600 text-white rounded" onClick={() => handleEdit()}>
                   Save
                 </button>
-              </>
-            : <>
-                <button className="ml-2 px-3 py-1 bg-blue-600 text-white rounded" onClick={() => setEdit(true)}>
+                <button className="px-3 py-1 w-20 bg-gray-200 rounded" onClick={() => setEdit(false)}>
+                  Cancel
+                </button>
+              </div>
+            : <div className="flex flex-col gap-10">
+                <button className="px-3 py-1 w-20 bg-blue-600 text-white rounded" onClick={() => setEdit(true)}>
                   Edit
                 </button> 
-                <button className="ml-2 px-3 py-1 bg-red-600 text-white rounded" onClick={() => handleDelete()}>
+                <button className="px-3 py-1 w-20 bg-red-600 text-white rounded" onClick={() => handleDelete()}>
                   Delete
                 </button> 
-              </>
+              </div>
           }
-      </div>
+        </div>
     </div>
   );
 }

@@ -9,21 +9,26 @@ dayjs.extend(localizedFormat);
 
 export const localTZ = dayjs.tz.guess();
 
-export function slotLabel(dayOfWeek: number, startTime: string, endTime: string) {
-  const today = dayjs();
-  const currentWeekMonday = today.startOf('week').add(1, 'day');
-  const target = currentWeekMonday.add(dayOfWeek - 1, 'day');
-  const start = dayjs(`${target.format('DD/MM/YYYY')}T${startTime}:00`).tz(localTZ);
-  const end = dayjs(`${target.format('DD/MM/YYYY')}T${endTime}:00`).tz(localTZ);
-  return `${start.format('ddd DD MMM, HH:mm')} - ${end.format('HH:mm')} (${localTZ})`;
+export function checkBookingDate(date: string, time: string, timezone: string) {
+  try {
+    const str = `${date} ${time}`;
+    const startLocal = dayjs(str, "DD/MM/YYYY HH:mm").tz(timezone);
+    if (startLocal.isBefore(dayjs().tz(localTZ))) { 
+      return 'Cannot book past slot in your local time'; 
+    } else {
+      return '';
+    }
+  } catch (e) {
+      return 'Time parsing error'; 
+  }
 }
 
-export function getDayOfWeek(date: Dayjs) {
-  return date.day();
+export function  getDateByTimezone (date: string, time: string, timezone: string) {
+  return dayjs(`${date} ${time}`, "DD/MM/YYYY HH:mm").tz(timezone)
 }
 
 export function parseDaysOfWeek(str: string) {
-  return str.split(';').map(item => (+item));
+  return str?.length ? str.split(';').map(item => (+item)) : [];
 }
 
 export function getTime(date: Dayjs) {

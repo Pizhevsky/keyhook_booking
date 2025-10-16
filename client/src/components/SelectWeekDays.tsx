@@ -25,7 +25,7 @@ interface CheckWeekDaysItemProps {
   onChange: (checked: boolean) => void;
 }
 
-const CheckWeekDaysItem = ({name, selected, disabled, onChange}: CheckWeekDaysItemProps) => {
+const SelectWeekDaysItem = ({name, selected, disabled, onChange}: CheckWeekDaysItemProps) => {
   return (
     <FormControlLabel
       label={name}
@@ -44,22 +44,18 @@ const CheckWeekDaysItem = ({name, selected, disabled, onChange}: CheckWeekDaysIt
   );
 };
 
-export default function CheckWeekDays({ daysOfWeek, disabled, onChange }: CheckWeekDaysProps) {
+export default function SelectWeekDays({ daysOfWeek, disabled, onChange }: CheckWeekDaysProps) {
   const [selectedDays, setSelectedDays] = useState(daysOfWeek);
-
-  useEffect(() => {
-    setSelectedDays(daysOfWeek);
-  }, [daysOfWeek])
 
   useEffect(() => {
     onChange(selectedDays);
   }, [selectedDays])
 
   return (
-    <div className="flex flex-row gap-2">
+    <div className="flex flex-row gap-1.5">
       {week.map(day => 
         <div key={day.id}>
-          <CheckWeekDaysItem 
+          <SelectWeekDaysItem 
             name={day.name} 
             selected={selectedDays.includes(day.id)}
             disabled={disabled}

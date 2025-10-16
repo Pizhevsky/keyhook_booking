@@ -26,7 +26,7 @@ export interface AvailabilityAttributes {
   daysOfWeek: string; 
   startTime: string; 
   endTime: string;
-  timeZone: string;
+  timezone: string;
 }
 export interface AvailabilityCreationAttributes extends Optional<AvailabilityAttributes, 'id'> {}
 
@@ -37,7 +37,7 @@ export class Availability extends Model<AvailabilityAttributes, AvailabilityCrea
   public daysOfWeek!: string; 
   public startTime!: string; 
   public endTime!: string;
-  public timeZone!: string;
+  public timezone!: string;
 }
 Availability.init({ 
   id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true }, 
@@ -46,7 +46,7 @@ Availability.init({
   daysOfWeek: { type: DataTypes.STRING, allowNull: false }, 
   startTime: { type: DataTypes.STRING, allowNull: false }, 
   endTime: { type: DataTypes.STRING, allowNull: false },
-  timeZone: { type: DataTypes.STRING, allowNull: false } 
+  timezone: { type: DataTypes.STRING, allowNull: false } 
 }, { sequelize, tableName: 'availability' });
 
 export interface BookingAttributes { 
