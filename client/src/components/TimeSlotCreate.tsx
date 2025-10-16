@@ -41,7 +41,7 @@ export default function TimeSlotCreate({ currentDateString }: TimeSlotCreateProp
   };
   
   return (edit
-    ? <div className="p-4 rounded-lg bg-white border">
+    ? <div className="p-4 flex-grow rounded-lg bg-white border">
         <div className="flex flex-wrap items-start justify-between justify-items-stretch">
           <TimeSlotEdit 
             edit={true}
