@@ -6,13 +6,9 @@ import { Availability, UserScheduleProps } from '../types';
 import { Avatar } from '@mui/material';
 import { UserContext } from '../contexts/UserContext';
 import BookingCancel from './BookingCancel';
-import { arrayToObjectByKey } from '../utils/transforms';
 
-
-export default function TenantSchedule({ currentDateString, users, slots, books }: UserScheduleProps) {
+export default function TenantSchedule({ currentDateString, dayUserSlots, booksBySlotId, usersById }: UserScheduleProps) {
   const { user } = useContext(UserContext);
-  const usersById = arrayToObjectByKey('id', users);
-  const booksBySlotId = arrayToObjectByKey('slotId', books);
   
   const handleBook = (slot: Availability) => {
     const check = checkBookingDate(currentDateString, slot.startTime, slot.timezone);
@@ -30,8 +26,8 @@ export default function TenantSchedule({ currentDateString, users, slots, books 
   return (
     <div>
       <div className="space-y-4">
-        {slots.length
-          ? slots.map(slot => {
+        {dayUserSlots.length
+          ? dayUserSlots.map(slot => {
               const manager = usersById[slot.managerId];
               const booking = booksBySlotId[slot.id];
 
@@ -50,7 +46,7 @@ export default function TenantSchedule({ currentDateString, users, slots, books 
                   </div>
                   <div>
                     {booking
-                      ? <BookingCancel bookingId={booking.id} />
+                      ? <BookingCancel bookingId={booking.id} canCancel={booking.tenantId === user.id}/>
                       : <button className="px-3 py-1 rounded bg-blue-600 text-white" onClick={() => handleBook(slot)}>
                           Book
                         </button>

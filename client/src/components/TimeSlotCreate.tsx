@@ -1,6 +1,6 @@
-import React, { useContext, useState } from 'react';
-import { Availability } from '../types';
-import { localTZ } from '../utils/time';
+import React, { useContext, useEffect, useState } from 'react';
+import { Availability, defaultAvailability } from '../types';
+import { getIntersectionsList, localTZ } from '../utils/time';
 import TimeSlotEdit from './TimeSlotEdit';
 import { addAvailability } from '../api';
 import toast from 'react-hot-toast';
@@ -8,19 +8,29 @@ import { UserContext } from '../contexts/UserContext';
 
 interface TimeSlotCreateProps {
   currentDateString: string;
+  allUserSlots: Availability[];
 }
 
-const defaultSlot: Partial<Availability> = {
+const defaultSlot: defaultAvailability = {
   daysOfWeek: [],
   selectedDate: '',
   startTime: '12:00',
   endTime: '13:00'
 }
 
-export default function TimeSlotCreate({ currentDateString }: TimeSlotCreateProps) {
+export default function TimeSlotCreate({ currentDateString, allUserSlots }: TimeSlotCreateProps) {
   const { user } = useContext(UserContext);
   const [edit, setEdit] = useState(false);
   const [slot, setSlot] = useState(defaultSlot);
+
+  useEffect(() => {
+    handleCancel();
+  }, [currentDateString]);
+
+  const handleCancel = () => {
+    setEdit(false);
+    setSlot(defaultSlot);
+  }
   
   const handleCreate = () => {
     const body = {
@@ -30,7 +40,14 @@ export default function TimeSlotCreate({ currentDateString }: TimeSlotCreateProp
       selectedDate: !slot.selectedDate && slot.daysOfWeek?.length === 0 
           ? currentDateString 
           : slot.selectedDate
+    };
+
+    const intersectionsList = getIntersectionsList(body, allUserSlots);
+    if (intersectionsList.length) {
+      toast.error(`Time slot ${body.startTime}-${body.endTime}\nhas intersections on:\n\n${intersectionsList.join(', ')}`);
+      return;
     }
+
     addAvailability(body).then(() => {
       toast.success('Created'); 
       setEdit(false); 
@@ -54,7 +71,7 @@ export default function TimeSlotCreate({ currentDateString }: TimeSlotCreateProp
             <button className="px-3 py-1 w-20 bg-blue-600 text-white rounded" onClick={() => handleCreate()}>
               Save
             </button>
-            <button className="px-3 py-1 w-20 bg-gray-200 rounded" onClick={() => setEdit(false)}>
+            <button className="px-3 py-1 w-20 bg-gray-200 rounded" onClick={() => handleCancel()}>
               Cancel
             </button>
           </div>

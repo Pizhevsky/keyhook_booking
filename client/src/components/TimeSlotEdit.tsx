@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Avatar, FormControlLabel, Checkbox } from '@mui/material';
-import { Availability } from '../types';
+import { Availability, defaultAvailability } from '../types';
 import TimeSelect from './TimeSelect';
 import SelectWeekDays from './SelectWeekDays';
 
 interface TimeSlotEditProps {
   edit: boolean;
-  slot: Partial<Availability>; 
+  slot: defaultAvailability; 
   userName: string;
   currentDateString: string;
-  onChange: (slot: Partial<Availability>) => void;
+  onChange: (slot: defaultAvailability) => void;
 }
 
 export default function TimeSlotEdit({ edit, slot, userName, currentDateString, onChange }: TimeSlotEditProps) {

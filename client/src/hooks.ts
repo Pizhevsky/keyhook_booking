@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { addAvailability, updateAvailability, removeAvailability, addBooking, removeBooking } from './store';
+import { addAvailability, updateAvailability, removeAvailability, addBooking, removeBooking, addUser } from './store';
 import { parseDaysOfWeek } from './utils/time';
 
 export function useSocketDispatch (url = 'ws://localhost:4000') {
@@ -13,6 +13,10 @@ export function useSocketDispatch (url = 'ws://localhost:4000') {
     ws.addEventListener('message',(ev) => {
       try {
         const data = JSON.parse(ev.data);
+
+        if (data.type === 'USER_CREATED') {
+          dispatch(addUser(data.payload));
+        }
 
         if (data.type === 'AVAILABILITY_CREATED') {
           dispatch(addAvailability({

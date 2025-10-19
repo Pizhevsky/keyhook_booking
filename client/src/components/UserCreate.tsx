@@ -1,13 +1,10 @@
 import React, { useState } from "react";
-import { useDispatch } from 'react-redux';
-import { addUser } from "../store";
 import { createUser } from "../api";
 import toast from "react-hot-toast";
 import { Role } from "../types";
 
 
 export default function UserCreate() {
-  const dispatch = useDispatch();
   const [name, setName] = useState('');
   const [role, setRole] = useState<Role>('tenant');
 
@@ -15,7 +12,6 @@ export default function UserCreate() {
     if (!name) return toast.error('Enter name');
 
     await createUser(name, role).then(user => {
-      dispatch(addUser(user)); 
       setName(''); 
       toast.success('User created'); 
     }).catch(e => { 

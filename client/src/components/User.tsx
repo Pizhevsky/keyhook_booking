@@ -43,9 +43,23 @@ export default function User () {
           </div>
           <UserCreate/>
         </div>
-        <div className="flex flex-row gap-4 justify-left">
-          <span>🟢 - Available booking</span>
-          <span>🟡 - User bookings </span>
+        <div className="flex flex-wrap gap-4 justify-left">
+          <div className="flex flex-row items-center">
+            <div className="flex items-center justify-center w-5 h-5 bg-green-500 rounded-full text-white text-xs mt-1">
+              3
+            </div><span>&nbsp;- Available booking</span>
+          </div>
+          <div className="flex flex-row items-center">
+            <div className="flex items-center justify-center w-5 h-5 bg-yellow-400 rounded-full text-white text-xs mt-1">
+              1
+            </div><span>&nbsp;- User bookings </span>
+          </div>
+          <div className="flex flex-row items-center">
+            <div className="flex items-center justify-center w-5 h-5 bg-red-400 rounded-full text-white text-xs mt-1">
+              <span>&#10005;</span>
+            </div><span>&nbsp;- All slots are booked </span>
+          </div>
+          <div>(number shows available slots)</div>
         </div>
       </div>
     </div>

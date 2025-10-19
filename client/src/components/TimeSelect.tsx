@@ -5,6 +5,7 @@ import { getTime } from "../utils/time";
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import localizedFormat from 'dayjs/plugin/localizedFormat';
+import toast from "react-hot-toast";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -43,14 +44,26 @@ export default function TimeSelect({start, end, onChange}: TimeSelectProps) {
         label="Start"
         slotProps={style}
         value={startValue}
-        onChange={(newValue) => setStartValue(newValue)}
+        onChange={(newValue) => {
+          if (newValue?.isBefore(endValue)) {
+            setStartValue(newValue);
+          } else {
+            toast.error('Star time should be before End time');
+          }
+        }}
       />
       -
       <TimePicker
         label="End"
         slotProps={style}
         value={endValue}
-        onChange={(newValue) => setEndValue(newValue)}
+        onChange={(newValue) => {
+          if (startValue?.isBefore(newValue)) {
+            setEndValue(newValue);
+          } else {
+            toast.error('End time should be after Start time');
+          }
+        }}
       />
     </div>
   );

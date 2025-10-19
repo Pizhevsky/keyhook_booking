@@ -26,10 +26,10 @@ a TypeScript and Express backend using SQLite and Sequelize.
 - Managers can edit and delete availabilities.
 - Server prevents double-booking via UNIQUE constraint and additional checks.
 - Timezone-aware labels (frontend uses user's timezone).
+- Checking for slot's time periods intersections.
 
 ## Production notes
-For production needs some improvements: 
-slot's time periods intersections, errors validation, Typescript on backend,
+For production needs some improvements:
 auth, PostgreSQL, WebSockets security, unit + integration + E2E tests.
 
 ## Demo steps
@@ -41,7 +41,7 @@ auth, PostgreSQL, WebSockets security, unit + integration + E2E tests.
 6. Switch back to manager. Slot is marked 'Booked'.
 7. Try to cancel booking as tenant and as manager.
 8. Try to delete slots as manager.
-9. To add users and initial slots check file server.ts, modify bulkCreate functions and restart.
+9. Add users with page form and try the variety of combinations.
 
 
 Talking points:

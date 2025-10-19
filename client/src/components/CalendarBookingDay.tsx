@@ -21,7 +21,20 @@ export default function CalendarBookingDay(props: any) {
           book.bookDate === dayString
         )
       );
-      badgeContent = dayBooks.length ? '🟡' : '🟢';
+
+      let full = dayBooks.length === daySlots.length;
+      let color = full ? 'bg-red-400' : (dayBooks.length ? 'bg-yellow-400' : 'bg-green-500');
+      let count = full 
+        ? (<span>&#10005;</span>) 
+        : daySlots.length < 100 
+          ? (<span>{(daySlots.length - dayBooks.length)}</span>) 
+          : (<span>&infin;</span>);
+
+      badgeContent = (
+        <div className={`flex items-center justify-center w-5 h-5 ${color} rounded-full text-white text-xs mt-1`}>
+          {count}
+        </div>
+      );
     }
   }
 

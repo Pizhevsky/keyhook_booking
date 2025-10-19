@@ -2,7 +2,7 @@ import React from 'react';
 import { deleteBooking } from '../api';
 import toast from 'react-hot-toast';
 
-export default function BookingCancel({ bookingId }: { bookingId: number }) {
+export default function BookingCancel({ bookingId, canCancel }: { bookingId: number, canCancel: boolean }) {
   
   const handleCancel = () => {
     if (bookingId) {
@@ -17,11 +17,14 @@ export default function BookingCancel({ bookingId }: { bookingId: number }) {
   }
 
   return (
-    <div className="flex flex-row">
-      <span className="mr-3 py-1 text-red-600 rounded">Booked</span>
-      <button className="px-3 py-1 rounded bg-gray-300" onClick={() => handleCancel()}>
-        Cancel
-      </button>
+    <div className="flex flex-row-reverse lg:flex-col items-center gap-2">
+      {canCancel
+        ? <button className="px-3 py-1 rounded bg-gray-300" onClick={() => handleCancel()}>
+            Cancel
+          </button>
+        : <></>
+      }
+      <span className="px-3 py-1 text-red-600 rounded">Booked</span>
     </div>
   );
 }
