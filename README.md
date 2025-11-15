@@ -1,6 +1,6 @@
 # Keyhook Booking System
 
-This is a proof-of-concept project for the Keyhook tech test.
+This is a proof-of-concept project for the Keyhook tech test (described in "Keyhook - Tech Test.pdf").
 It includes a TypeScript, React, Tailwind and MaterialUI frontend (Parcel) and 
 a TypeScript and Express backend using SQLite and Sequelize.
 
@@ -21,7 +21,7 @@ a TypeScript and Express backend using SQLite and Sequelize.
 ## What I implemented
 - Ability to switch between users 2 tenants and 2 managers for testing purposes.
 - Managers can add availability slots by specific date and by the weekday.
-- Tenants can view and book and cancel slots.
+- Tenants can view, book and cancel slots.
 - Managers can view booked slots and cancel them.
 - Managers can edit and delete availabilities.
 - Server prevents double-booking via UNIQUE constraint and additional checks.
@@ -30,7 +30,7 @@ a TypeScript and Express backend using SQLite and Sequelize.
 
 ## Production notes
 For production needs some improvements:
-auth, PostgreSQL, WebSockets security, unit + integration + E2E tests.
+auth and accounts, action messaging via SMS and mail, PostgreSQL, WebSockets security, unit + integration + E2E tests.
 
 ## Demo steps
 1. Start servers: `npm run dev`
