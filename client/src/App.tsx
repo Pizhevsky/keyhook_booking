@@ -1,40 +1,61 @@
-import React, { useContext, useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { useDispatch } from 'react-redux';
-import toast, { Toaster } from 'react-hot-toast';
-import { getUsers, getAvailability, getBookings } from './api';
-import { setUsers, setAvailability, setBookings } from './store';
-import { useSocketDispatch } from './hooks';
-import Page from './layouts/Page';
+import { Toaster } from 'react-hot-toast';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import Header from './components/Header';
-import { parseDaysOfWeek } from './utils/time';
-import { UserProvider } from './contexts/UserProvider';
-import { UserContext } from './contexts/UserContext';
+import { UserProvider } from './contexts/UserContext';
+import { useSocketDispatch } from './hooks/useSocketDispatch';
+import Page from './layouts/Page';
+import { getUsers, getAvailability, getBookings } from './services/apiService';
+import { handleApiAction } from './services/errorService';
+import { setAvailability, setBookings, setLoading, setUsers, useAppDispatch } from './store';
+import { mapServerAvailability } from './utils/transforms';
 
-export default function App(){
-  const dispatch = useDispatch();
+export default function App() {
+  const dispatch = useAppDispatch();
 
   useSocketDispatch();
 
-  useEffect(() => { 
-    getUsers()
-      .then(users => {
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadInitialData(): Promise<void> {
+      dispatch(setLoading(true));
+
+      const result = await handleApiAction(
+        () => Promise.all([
+          getUsers({ signal: controller.signal }),
+          getAvailability({ signal: controller.signal }),
+          getBookings({ signal: controller.signal })
+        ]),
+        {
+          errorMessage: 'Failed to load data',
+          logLabel: 'Initial data load failed',
+        }
+      );
+
+      if (controller.signal.aborted) {
+        return;
+      }
+
+      if (result.ok) {
+        const [users, availability, bookings] = result.data;
+
         dispatch(setUsers(users));
-      })
-      .catch(() => toast.error('Failed users')); 
-    getAvailability()
-      .then(availability => dispatch(setAvailability(
-        availability.map((item: any) => ({
-          ...item,
-          daysOfWeek: parseDaysOfWeek(item.daysOfWeek)
-        }))
-      )))
-      .catch(() => toast.error('Failed availability')); 
-    getBookings()
-      .then(bookings => dispatch(setBookings(bookings)))
-      .catch(() => toast.error('Failed bookings')); 
-  }, []);
+        dispatch(setAvailability(availability.map(mapServerAvailability)));
+        dispatch(setBookings(bookings));
+      }
+
+      dispatch(setLoading(false));
+    }
+
+    void loadInitialData();
+
+    return () => {
+      controller.abort();
+    };
+  }, [dispatch]);
 
   return (
     <UserProvider>

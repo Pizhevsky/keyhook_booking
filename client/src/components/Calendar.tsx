@@ -1,23 +1,16 @@
-import React from 'react';
-import { DateCalendar } from '@mui/x-date-pickers';
 import { styled } from '@mui/material';
-import { Availability, Booking } from '../types';
-import dayjs, { Dayjs } from 'dayjs';
-import updateLocale from 'dayjs/plugin/updateLocale'
+import { DateCalendar } from '@mui/x-date-pickers';
+import type { Dayjs } from 'dayjs';
+import type { Availability, Booking } from '../types';
 import CalendarBookingDay from './CalendarBookingDay';
 
-dayjs.extend(updateLocale)
-dayjs.updateLocale('en', {
-    weekStart: 1,
-})
-
 interface CalendarProps {
-  date: Dayjs;
+  date: Dayjs
   day: {
     slots: Availability[],
     books: Booking[]
-  };
-  onChange: (date: Dayjs) => void;
+  }
+  onChange: (date: Dayjs) => void
 }
 
 const StyledDateCalendar = styled(DateCalendar)({

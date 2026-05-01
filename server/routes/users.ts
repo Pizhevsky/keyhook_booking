@@ -1,20 +1,34 @@
 import { Router } from 'express';
-import { User } from '../models';
-import { validateUser } from '../middleware/validateUser';
-import { broadcast } from '../broadcast';
+import type { Response } from 'express';
+import { 
+  validateCreateUser,
+  type ValidatedLocals,
+  type CreateUserInput,
+} from '../middleware/validate';
+import { getAllUsers, createUser } from '../services/userService';
 
 const router = Router();
 
-router.get('/', async (req, res) => {
-  const rows = await User.findAll({ attributes: ['id', 'name', 'role'] });
-  res.json(rows);
-});
+router.get('/', 
+  async (req, res, next) => {
+    try {
+      res.json(await getAllUsers());
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 
-router.post('/', validateUser, async (req, res) => {
-  const { name, role } = req.body;
-  const user = await User.create({ name, role } as any);
-  broadcast({ type: 'USER_CREATED', payload: user });
-  res.status(201).json(user);
-});
+router.post('/',
+  validateCreateUser,
+  async (req, res: Response<unknown, ValidatedLocals<CreateUserInput>>, next) => {
+    try {
+      const { name, role } = res.locals.validatedBody;
+      res.status(201).json(await createUser(name, role));
+    } catch (err) {
+      next(err);
+    }
+  },
+); 
 
 export default router;

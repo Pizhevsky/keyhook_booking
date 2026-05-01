@@ -1,17 +1,20 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { Availability, defaultAvailability } from '../types';
+import { useState } from 'react';
 import { getIntersectionsList, localTZ } from '../utils/time';
 import TimeSlotEdit from './TimeSlotEdit';
-import { addAvailability } from '../api';
-import toast from 'react-hot-toast';
-import { UserContext } from '../contexts/UserContext';
+import { createAvailability } from '../services/apiService';
+import { handleApiAction, showErrorToast } from '../services/errorService';
+import { useUser } from '../contexts/UserContext';
+import { addAvailability, useAppDispatch } from '../store';
+import type { Availability, AvailabilityDraft, ServerAvailability } from '../types';
+import { mapServerAvailability } from '../utils/transforms';
 
 interface TimeSlotCreateProps {
-  currentDateString: string;
-  allUserSlots: Availability[];
+  currentDateString: string
+  allUserSlots: Availability[]
 }
 
-const defaultSlot: defaultAvailability = {
+const defaultSlot: AvailabilityDraft = {
+  id: undefined,
   daysOfWeek: [],
   selectedDate: '',
   startTime: '12:00',
@@ -19,20 +22,19 @@ const defaultSlot: defaultAvailability = {
 }
 
 export default function TimeSlotCreate({ currentDateString, allUserSlots }: TimeSlotCreateProps) {
-  const { user } = useContext(UserContext);
+  const dispatch = useAppDispatch();
+  const { user } = useUser();
   const [edit, setEdit] = useState(false);
-  const [slot, setSlot] = useState(defaultSlot);
-
-  useEffect(() => {
-    handleCancel();
-  }, [currentDateString]);
+  const [slot, setSlot] = useState<AvailabilityDraft>(defaultSlot);
 
   const handleCancel = () => {
     setEdit(false);
     setSlot(defaultSlot);
   }
   
-  const handleCreate = () => {
+  const handleCreate = async () => {
+    if (!user) return;
+
     const body = {
       ...slot,
       managerId: user.id,
@@ -44,41 +46,51 @@ export default function TimeSlotCreate({ currentDateString, allUserSlots }: Time
 
     const intersectionsList = getIntersectionsList(body, allUserSlots);
     if (intersectionsList.length) {
-      toast.error(`Time slot ${body.startTime}-${body.endTime}\nhas intersections on:\n\n${intersectionsList.join(', ')}`);
+      showErrorToast(`
+        Time slot ${body.startTime}-${body.endTime}\n
+        has intersections on:\n\n
+        ${intersectionsList.join('\n')}
+      `);
       return;
     }
 
-    addAvailability(body).then(() => {
-      toast.success('Created'); 
-      setEdit(false); 
-      setSlot(defaultSlot);
-    }).catch((e) => {
-      toast.error(`Failed create: ${e.response.data.error}`); 
-    });
+    const result = await handleApiAction(
+      () =>  createAvailability(body),
+      {
+        successMessage: 'Slot created',
+        errorMessage: 'Failed to create slot',
+        logLabel: 'Create slot failed',
+      },
+    );
+
+    if (result.ok) {
+      handleCancel();
+      dispatch(addAvailability(mapServerAvailability(result.data as ServerAvailability)));
+    }
   };
   
   return (edit
     ? <div className="p-4 flex-grow rounded-lg bg-white border">
         <div className="flex flex-wrap items-start justify-between justify-items-stretch">
           <TimeSlotEdit 
-            edit={true}
+            edit
             slot={slot}
             currentDateString={currentDateString}
-            userName={'Manager slot'}
-            onChange={newState => setSlot(newState)}
+            userName={user?.name || 'Manager slot'}
+            onChange={setSlot}
           />
           <div className="flex flex-col gap-2">
-            <button className="px-3 py-1 w-20 bg-blue-600 text-white rounded" onClick={() => handleCreate()}>
+            <button type="button" className="px-3 py-1 w-20 bg-blue-600 text-white rounded" onClick={handleCreate}>
               Save
             </button>
-            <button className="px-3 py-1 w-20 bg-gray-200 rounded" onClick={() => handleCancel()}>
+            <button type="button" className="px-3 py-1 w-20 bg-gray-200 rounded" onClick={handleCancel}>
               Cancel
             </button>
           </div>
         </div>
       </div>
-    : <button className="px-3 py-1 rounded bg-green-600 text-white mt-4 mr-3" onClick={() => setEdit(true)}>
-        {'Add Slot'}
+    : <button type="button" className="px-3 py-1 rounded bg-green-600 text-white mt-4 mr-3" onClick={() => setEdit(true)}>
+        Add Slot
       </button>
   );
 }

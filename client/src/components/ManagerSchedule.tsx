@@ -1,10 +1,17 @@
-import React from 'react';
+import { useUser } from '../contexts/UserContext';
+import type { ManagerScheduleProps } from '../types';
 import ManagerTimeSlot from './ManagerTimeSlot';
-import { UserScheduleProps } from '../types';
 import TimeSlotCreate from './TimeSlotCreate';
 
-export default function ManagerSchedule({ currentDateString, dayUserSlots, allUserSlots, booksBySlotId, usersById }: UserScheduleProps) {
-  
+export default function ManagerSchedule({ 
+  currentDateString, 
+  dayUserSlots, 
+  allUserSlots, 
+  booksBySlotId, 
+  usersById 
+}: ManagerScheduleProps) {
+  const { user } = useUser();
+
   return (
     <div className="space-y-4">
       {dayUserSlots.length
@@ -19,6 +26,7 @@ export default function ManagerSchedule({ currentDateString, dayUserSlots, allUs
                   allUserSlots={allUserSlots}
                   currentDateString={currentDateString}
                   bookingId={booking?.id}
+                  managerId={user?.id}
                   userName={tenant ? tenant.name : 'Manager slot'}
                 />
               </div>

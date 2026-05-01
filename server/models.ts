@@ -1,83 +1,122 @@
 import { DataTypes, Model, Optional } from 'sequelize';
-import sequelize from './sequelize';
+import sequelize from './lib/sequelize';
+import { BOOKING_STATUS } from './types';
+import type { UserRole, BookingStatus } from './types';
 
+
+// ── User ──────────────────────────────────────────────────────────────────────
 export interface UserAttributes { 
-  id: number; 
-  name: string; 
-  role: 'tenant' | 'manager' 
+  id: number
+  name: string
+  role: UserRole 
 }
-export interface UserCreationAttributes extends Optional<UserAttributes, 'id'> {}
+type UserCreationAttributes = Optional<UserAttributes, 'id'>
+export class User 
+  extends Model<UserAttributes, UserCreationAttributes> 
+  implements UserAttributes 
+{
+  declare id: number; 
+  declare name: string; 
+  declare role: UserRole;
+}
 
-export class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
-  public id!: number; 
-  public name!: string; 
-  public role!: 'tenant' | 'manager';
-}
 User.init({ 
   id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true }, 
-  name: { type: DataTypes.STRING, allowNull: false }, 
-  role: { type: DataTypes.STRING, allowNull: false } 
-}, { sequelize, tableName: 'users' });
+  name: { type: DataTypes.STRING(200), allowNull: false }, 
+  role: { 
+    type: DataTypes.STRING, 
+    allowNull: false,
+    validate: { isIn: [['tenant', 'manager']] }
+  } 
+}, { sequelize, tableName: 'users', timestamps: false });
 
+// ── Availability ──────────────────────────────────────────────────────────────
 export interface AvailabilityAttributes { 
-  id: number; 
-  managerId: number;
-  selectedDate: string; 
-  daysOfWeek: string; 
-  startTime: string; 
-  endTime: string;
-  timezone: string;
+  id: number
+  managerId: number
+  selectedDate: string
+  daysOfWeek: string
+  startTime: string
+  endTime: string
+  timezone: string
 }
-export interface AvailabilityCreationAttributes extends Optional<AvailabilityAttributes, 'id'> {}
+type AvailabilityCreationAttributes = Optional<AvailabilityAttributes, 'id'>
 
-export class Availability extends Model<AvailabilityAttributes, AvailabilityCreationAttributes> implements AvailabilityAttributes {
-  public id!: number; 
-  public managerId!: number;
-  public selectedDate!: string;
-  public daysOfWeek!: string; 
-  public startTime!: string; 
-  public endTime!: string;
-  public timezone!: string;
+export class Availability 
+  extends Model<AvailabilityAttributes, AvailabilityCreationAttributes> 
+  implements AvailabilityAttributes 
+{
+  declare id: number; 
+  declare managerId: number;
+  declare selectedDate: string;
+  declare daysOfWeek: string; 
+  declare startTime: string; 
+  declare endTime: string;
+  declare timezone: string;
 }
 Availability.init({ 
   id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true }, 
   managerId: { type: DataTypes.INTEGER, allowNull: false },
-  selectedDate: { type: DataTypes.STRING, allowNull: false },
-  daysOfWeek: { type: DataTypes.STRING, allowNull: false }, 
-  startTime: { type: DataTypes.STRING, allowNull: false }, 
-  endTime: { type: DataTypes.STRING, allowNull: false },
-  timezone: { type: DataTypes.STRING, allowNull: false } 
-}, { sequelize, tableName: 'availability' });
+  selectedDate: { type: DataTypes.STRING(10), allowNull: false },
+  daysOfWeek: { type: DataTypes.STRING(20), allowNull: false }, 
+  startTime: { type: DataTypes.STRING(5), allowNull: false }, 
+  endTime: { type: DataTypes.STRING(5), allowNull: false },
+  timezone: { type: DataTypes.STRING(50), allowNull: false } 
+}, { sequelize, tableName: 'availability', timestamps: false });
 
+// ── Booking ───────────────────────────────────────────────────────────────────
 export interface BookingAttributes { 
-  id: number; 
-  slotId: number; 
-  bookDate: string;
-  tenantId: number;
-  createdAt?: Date 
+  id: number
+  slotId: number
+  bookDate: string
+  tenantId: number
+  status: BookingStatus
+  createdAt: Date
+  cancelledAt: Date | null
 }
-export interface BookingCreationAttributes extends Optional<BookingAttributes, 'id'> {}
+type BookingCreationAttributes = Optional<BookingAttributes, 'id' | 'createdAt' | 'cancelledAt' | 'status'>
 
-export class Booking extends Model<BookingAttributes, BookingCreationAttributes> implements BookingAttributes {
-  public id!: number; 
-  public slotId!: number;
-  public bookDate!: string;
-  public tenantId!: number;
-  public createdAt?: Date;
+export class Booking 
+  extends Model<BookingAttributes, BookingCreationAttributes> 
+  implements BookingAttributes 
+{
+  declare id: number; 
+  declare slotId: number;
+  declare bookDate: string;
+  declare tenantId: number;
+  declare status: BookingStatus;
+  declare createdAt: Date;
+  declare cancelledAt: Date | null;
 }
-Booking.init({ 
+
+Booking.init({
   id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true }, 
   slotId: { type: DataTypes.INTEGER, allowNull: false }, 
-  bookDate: { type: DataTypes.INTEGER, allowNull: false},
+  bookDate: { type: DataTypes.STRING(10), allowNull: false},
   tenantId: { type: DataTypes.INTEGER, allowNull: false },
-  createdAt: { type: DataTypes.DATE, allowNull: true, defaultValue: DataTypes.NOW } 
+  status: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    defaultValue: BOOKING_STATUS.ACTIVE,
+    validate: { isIn: [Object.values(BOOKING_STATUS)] }
+  },
+  createdAt: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
+  cancelledAt: { type: DataTypes.DATE, allowNull: true, defaultValue: null }
 }, { sequelize, tableName: 'bookings', timestamps: false });
 
-User.hasMany(Availability, { foreignKey: 'managerId' });
-Availability.belongsTo(User, { foreignKey: 'managerId' });
-Availability.hasMany(Booking, { foreignKey: 'slotId' });
-Booking.belongsTo(Availability, { foreignKey: 'slotId' });
+// ── Associations ──────────────────────────────────────────────────────────────
+User.hasMany(Availability, { foreignKey: 'managerId', as: 'availabilities' });
+Availability.belongsTo(User, { foreignKey: 'managerId', as: 'manager' });
+Availability.hasMany(Booking, { foreignKey: 'slotId', as: 'bookings', onDelete: 'CASCADE' });
+Booking.belongsTo(Availability, { foreignKey: 'slotId', as: 'slot' });
+Booking.belongsTo(User, { foreignKey: 'tenantId', as: 'tenant' });
 
-export async function syncModels() {
+// ── Schema setup ──────────────────────────────────────────────────────────────
+export async function syncModels(): Promise<void> {
   await sequelize.sync();
+  await sequelize.query(`
+    CREATE UNIQUE INDEX IF NOT EXISTS ux_bookings_slot_date_active
+    ON bookings (slotId, bookDate)
+    WHERE status = '${BOOKING_STATUS.ACTIVE}'
+  `);
 }

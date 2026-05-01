@@ -1,26 +1,45 @@
-import React, { useContext } from 'react';
-import toast from 'react-hot-toast';
-import { checkBookingDate, getDateByTimezone, localTZ } from '../utils/time';
-import { bookSlot } from '../api';
-import { Availability, UserScheduleProps } from '../types';
 import { Avatar } from '@mui/material';
-import { UserContext } from '../contexts/UserContext';
+import { useUser } from '../contexts/UserContext';
+import { bookSlot } from '../services/apiService';
+import { handleApiAction, showErrorToast } from '../services/errorService';
+import type { Availability, ScheduleProps } from '../types';
+import { useAppDispatch, addBooking } from '../store';
+import { checkBookingDate, getDateByTimezone, localTZ } from '../utils/time';
 import BookingCancel from './BookingCancel';
 
-export default function TenantSchedule({ currentDateString, dayUserSlots, booksBySlotId, usersById }: UserScheduleProps) {
-  const { user } = useContext(UserContext);
+export default function TenantSchedule({
+  currentDateString,
+  dayUserSlots,
+  booksBySlotId,
+  usersById
+}: ScheduleProps) {
+  const dispatch = useAppDispatch();
+  const { user } = useUser();
   
-  const handleBook = (slot: Availability) => {
+  const handleBook = async (slot: Availability) => {
     const check = checkBookingDate(currentDateString, slot.startTime, slot.timezone);
     if (check) {
-      toast.error(check);
+      showErrorToast(check);
       return;
     }
-    bookSlot(slot.id, currentDateString, user.id, localTZ).then(() => {
-      toast.success('Booked');
-    }).catch((e) => {
-      toast.error(`Booking failed: ${e.response.data.error}`); 
-    });
+
+    if (!user) {
+      showErrorToast('No user selected');
+      return;
+    }
+
+    const result = await handleApiAction(
+      () =>  bookSlot(slot.id, currentDateString, user.id, localTZ),
+      {
+        successMessage: 'Slot booked',
+        errorMessage: 'Failed to book slot',
+        logLabel: 'Book slot failed',
+      },
+    );
+
+    if (result.ok) {
+      dispatch(addBooking(result.data));
+    }
   };
 
   return (
@@ -30,9 +49,14 @@ export default function TenantSchedule({ currentDateString, dayUserSlots, booksB
           ? dayUserSlots.map(slot => {
               const manager = usersById[slot.managerId];
               const booking = booksBySlotId[slot.id];
+              const isBooked = booking?.status === 'active';
+              const color = isBooked ? 'bg-gray-100' : 'bg-white';
 
               return (
-                <div key={slot.id} className={`p-4 rounded-lg ${booking ? 'bg-gray-100' : 'bg-white'} flex items-center justify-between border`}>
+                <div 
+                  key={slot.id} 
+                  className={`p-4 rounded-lg ${color} flex items-center justify-between border`}
+                >
                   <div className='flex gap-2'>
                     <Avatar>{manager ? manager.name[0] : 'M'}</Avatar>
                     <div>
@@ -45,9 +69,16 @@ export default function TenantSchedule({ currentDateString, dayUserSlots, booksB
                     </div>
                   </div>
                   <div>
-                    {booking
-                      ? <BookingCancel bookingId={booking.id} canCancel={booking.tenantId === user.id}/>
-                      : <button className="px-3 py-1 rounded bg-blue-600 text-white" onClick={() => handleBook(slot)}>
+                    {isBooked
+                      ? <BookingCancel 
+                          bookingId={booking.id} 
+                          cancelledBy={user?.id ?? 0}
+                          canCancel={booking.tenantId === user?.id}
+                        />
+                      : <button type="button" 
+                          className="px-3 py-1 rounded bg-blue-600 text-white" 
+                          onClick={() => handleBook(slot)}
+                        >
                           Book
                         </button>
                     }

@@ -1,38 +1,56 @@
-import React from 'react';
-import { PickersDay } from "@mui/x-date-pickers/PickersDay";
 import { Badge } from '@mui/material';
-import { Availability, Booking } from '../types';
+import { PickersDay, type PickersDayProps } from '@mui/x-date-pickers/PickersDay';
+import type { ReactNode } from 'react';
+import type { Dayjs } from '../lib/dayjs';
+import type { Availability, Booking } from '../types';
+import { DATE_FORMAT } from '../utils/time';
 
-export default function CalendarBookingDay(props: any) {
-  const { slots = [], books = [], day, outsideCurrentMonth, ...other } = props;
+interface CalendarBookingDayProps extends PickersDayProps {
+  day: Dayjs
+  slots?: Availability[]
+  books?: Booking[]
+}
+
+export default function CalendarBookingDay({ 
+  day,
+  slots = [],
+  books = [],
+  outsideCurrentMonth,
+  ...other
+}: CalendarBookingDayProps) {
   const dayNumber = day.day() === 0 ? 7 : day.day();
-  const dayString = day.format("DD/MM/YYYY");
+  const dayString = day.format(DATE_FORMAT);
 
-  let badgeContent;
-  if (!props.outsideCurrentMonth) {
+  let badgeContent: ReactNode = null;
+
+  if (!outsideCurrentMonth) {
     const daySlots = slots.filter((slot: Availability) => 
       slot.daysOfWeek.includes(dayNumber) || 
       slot.selectedDate === dayString
     );
-    if (daySlots.length) {
+    if (daySlots.length > 0) {
       const dayBooks = daySlots.filter((slot: Availability) => 
         books.some((book: Booking) =>
           book.slotId === slot.id &&
-          book.bookDate === dayString
+          book.bookDate === dayString &&
+          book.status === 'active'
         )
       );
 
-      let full = dayBooks.length === daySlots.length;
-      let color = full ? 'bg-red-400' : (dayBooks.length ? 'bg-yellow-400' : 'bg-green-500');
-      let count = full 
-        ? (<span>&#10005;</span>) 
-        : daySlots.length < 100 
-          ? (<span>{(daySlots.length - dayBooks.length)}</span>) 
-          : (<span>&infin;</span>);
+      const available = daySlots.length - dayBooks.length;
+      const isFull = available === 0;
+      const color = isFull 
+        ? 'bg-red-400'
+        : dayBooks.length > 0
+          ? 'bg-yellow-400'
+          : 'bg-green-500';
 
       badgeContent = (
         <div className={`flex items-center justify-center w-5 h-5 ${color} rounded-full text-white text-xs mt-1`}>
-          {count}
+          {isFull
+            ? <span>&#10005;</span>
+            : <span>{available < 100 ? available : '∞'}</span>
+          }
         </div>
       );
     }
@@ -40,7 +58,7 @@ export default function CalendarBookingDay(props: any) {
 
   return (
     <Badge
-      key={props.day.toString()}
+      key={day.toString()}
       overlap="circular"
       badgeContent={badgeContent}
     >

@@ -1,27 +1,26 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Avatar, FormControlLabel, Checkbox } from '@mui/material';
-import { Availability, defaultAvailability } from '../types';
+import type { AvailabilityDraft } from '../types';
 import TimeSelect from './TimeSelect';
 import SelectWeekDays from './SelectWeekDays';
 
 interface TimeSlotEditProps {
-  edit: boolean;
-  slot: defaultAvailability; 
-  userName: string;
-  currentDateString: string;
-  onChange: (slot: defaultAvailability) => void;
+  edit: boolean
+  slot: AvailabilityDraft
+  userName: string
+  currentDateString: string
+  onChange: (slot: AvailabilityDraft) => void
 }
 
-export default function TimeSlotEdit({ edit, slot, userName, currentDateString, onChange }: TimeSlotEditProps) {
-  const [newSlot, setNewSlot] = useState(slot);
-
-  useEffect(() => {
-    setNewSlot(slot);
-  }, [slot]);
-
-  useEffect(() => {
-    onChange(newSlot);
-  }, [newSlot]);
+export default function TimeSlotEdit({
+  edit, 
+  slot, 
+  userName, 
+  currentDateString, 
+  onChange 
+}: TimeSlotEditProps) {
+  const update = (partial: Partial<AvailabilityDraft>) =>
+    onChange({ ...slot, ...partial });
 
   return (
     <div className="flex flex-col gap-4">
@@ -31,30 +30,19 @@ export default function TimeSlotEdit({ edit, slot, userName, currentDateString, 
           <div className="font-medium">{userName}</div>
           {edit
             ? <TimeSelect 
-                start={`${currentDateString} ${newSlot.startTime}`}
-                end={`${currentDateString} ${newSlot.endTime}`}
-                onChange={({startTime, endTime}) => {
-                  setNewSlot(prev => ({
-                    ...prev,
-                    startTime, 
-                    endTime
-                  }))
-                }}
+                start={`${currentDateString} ${slot.startTime}`}
+                end={`${currentDateString} ${slot.endTime}`}
+                onChange={({startTime, endTime}) => update({ startTime, endTime })}
               />
-            : <div className="text-sm text-gray-500">{newSlot.startTime} - {newSlot.endTime}</div>
+            : <div className="text-sm text-gray-500">{slot.startTime} - {slot.endTime}</div>
           }
         </div>
       </div>
       <div className="flex gap-2 items-end">
           <SelectWeekDays 
-            daysOfWeek={newSlot.daysOfWeek || []} 
+            daysOfWeek={slot.daysOfWeek || []} 
             disabled={!edit} 
-            onChange={daysOfWeek => {
-              setNewSlot(prev => ({
-                ...prev,
-                daysOfWeek
-              }))
-            }}
+            onChange={daysOfWeek => update({ daysOfWeek })}
           />
           <div className="text-sm text-gray-500 mb-0.5">or</div>
           <div className="flex flex-col">
@@ -67,13 +55,8 @@ export default function TimeSlotEdit({ edit, slot, userName, currentDateString, 
                 <Checkbox
                   size="small"
                   sx={{ padding: '0 4px 0 0' }} 
-                  checked={newSlot.selectedDate === currentDateString} 
-                  onChange={(e) => {
-                    setNewSlot(prev => ({
-                      ...prev,
-                      selectedDate: e.target.checked ? currentDateString : ''
-                    }));
-                  }}
+                  checked={slot.selectedDate === currentDateString} 
+                  onChange={e => update({ selectedDate: e.target.checked ? currentDateString : '' })}
                 />
               }
             />

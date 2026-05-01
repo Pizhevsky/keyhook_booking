@@ -1,69 +1,74 @@
-import React, {useEffect, useState} from "react";
-import { TimePicker } from "@mui/x-date-pickers";
-import dayjs, { Dayjs } from "dayjs";
-import { getTime } from "../utils/time";
-import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
-import localizedFormat from 'dayjs/plugin/localizedFormat';
-import toast from "react-hot-toast";
-
-dayjs.extend(utc);
-dayjs.extend(timezone);
-dayjs.extend(localizedFormat);
+import { useState } from 'react';
+import { TimePicker } from '@mui/x-date-pickers';
+import dayjs, { type Dayjs } from '../lib/dayjs';
+import { DATETIME_FORMAT, getTime } from '../utils/time';
+import { showErrorToast } from '../services/errorService';
 
 interface TimeSelectProps {
-  start: string, 
-  end: string,
-  onChange: ({startTime, endTime}: {startTime: string, endTime: string}) => void
+  start: string 
+  end: string
+  onChange: (times: {startTime: string, endTime: string}) => void
 }
 
-const style: any = { 
+const slotProps = { 
   textField: { 
     sx: { 
       width: '120px',
       '& .MuiInputAdornment-positionEnd': { margin: 0 },
       '& .MuiPickersOutlinedInput-root': { padding: '0 10px' }
     }, 
-    size: 'small' 
+    size: 'small' as const 
   } 
 }
 
 export default function TimeSelect({start, end, onChange}: TimeSelectProps) {
-  const [startValue, setStartValue] = useState<Dayjs | null>(dayjs(start, "DD/MM/YYYY HH:mm"));
-  const [endValue, setEndValue] = useState<Dayjs | null>(dayjs(end, "DD/MM/YYYY HH:mm"));
+  const [startValue, setStartValue] = useState<Dayjs>(dayjs(start, DATETIME_FORMAT));
+  const [endValue, setEndValue] = useState<Dayjs>(dayjs(end, DATETIME_FORMAT));
 
-  useEffect(() => {
-    const startTime = startValue ? getTime(startValue) : start;
+  const handleStartChange = (newValue: Dayjs | null) => {
+    if (!newValue?.isValid()) return;
+
+    if (!newValue.isBefore(endValue)) {
+      showErrorToast('Start time must be before end time');
+      return;
+    }
+
+    const startTime = getTime(newValue);
     const endTime = endValue ? getTime(endValue) : end;
+
+    setStartValue(newValue);
     onChange({ startTime, endTime });
-  }, [startValue, endValue]);
+  };
+
+  const handleEndChange = (newValue: Dayjs | null) => {
+    if (!newValue?.isValid()) return;
+
+    if (!startValue?.isBefore(newValue)) {
+      showErrorToast('End time must be after start time');
+      return;
+    }
+
+    const startTime = startValue ? getTime(startValue) : start;
+    const endTime = getTime(newValue);
+
+    setEndValue(newValue);
+    onChange({ startTime, endTime });
+  };
 
   return (
     <div className="flex flex-row gap-1 items-center mt-2 -ml-3">
       <TimePicker
         label="Start"
-        slotProps={style}
+        slotProps={slotProps}
         value={startValue}
-        onChange={(newValue) => {
-          if (newValue?.isBefore(endValue)) {
-            setStartValue(newValue);
-          } else {
-            toast.error('Star time should be before End time');
-          }
-        }}
+        onChange={handleStartChange}
       />
       -
       <TimePicker
         label="End"
-        slotProps={style}
+        slotProps={slotProps}
         value={endValue}
-        onChange={(newValue) => {
-          if (startValue?.isBefore(newValue)) {
-            setEndValue(newValue);
-          } else {
-            toast.error('End time should be after Start time');
-          }
-        }}
+        onChange={handleEndChange}
       />
     </div>
   );

@@ -1,51 +1,58 @@
-import React from 'react';
-import { deleteAvailability } from '../api';
-import toast from 'react-hot-toast';
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import { useState } from 'react';
+import { deleteAvailability } from '../services/apiService';
+import { 
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle
+} from '@mui/material';
+import { handleApiAction } from '../services/errorService';
+import { removeAvailability, useAppDispatch } from '../store';
+import { useUser } from '../contexts/UserContext';
 
 interface TimeSlotDeleteProps {
-  slotId: number | undefined;
-  onDelete: () => void;
+  slotId: number
+  managerId: number
+  onDelete: () => void
 }
 
-export default function TimeSlotDelete({ slotId, onDelete }: TimeSlotDeleteProps) {
-  const [open, setOpen] = React.useState(false);
+export default function TimeSlotDelete({ slotId, managerId, onDelete }: TimeSlotDeleteProps) {
+  const dispatch = useAppDispatch();
+  const [open, setOpen] = useState(false);
+  const { setUser } = useUser();
   
-  const handleDelete = () => {
-    if (slotId) {
-      deleteAvailability(slotId).then(() => {
-        toast.success('Deleted'); 
-        setOpen(false)
-        onDelete(); 
-      }).catch((e) => {
-        toast.error(`Failed delete: ${e.response.data.error}`); 
-      });
+  const handleDelete = async () => {
+    const result = await handleApiAction(
+      () =>  deleteAvailability(slotId, managerId),
+      {
+        successMessage: 'Slot deleted',
+        errorMessage: 'Failed to delete slot',
+        logLabel: 'Delete slot failed',
+      },
+    );
+
+    if (result.ok) {
+      dispatch(removeAvailability(slotId));
     }
   }
   
   return (<>
-    <button className="px-3 py-1 w-20 bg-red-600 text-white rounded" onClick={() => setOpen(true)}>
+    <button type="button" 
+      className="px-3 py-1 w-20 bg-red-600 text-white rounded" 
+      onClick={() => setOpen(true)}
+    >
       Delete
     </button>
-    <Dialog
-      open={open}
-      onClose={() => setOpen(false)}
-      aria-labelledby="alert-dialog-title"
-      aria-describedby="alert-dialog-description"
-    >
-      <DialogTitle id="alert-dialog-title">
-        Slot deletion.
-      </DialogTitle>
+    <Dialog open={open} onClose={() => setOpen(false)}>
+      <DialogTitle>Delete slot</DialogTitle>
       <DialogContent>
-        <DialogContentText id="alert-dialog-description">
-          Do you really want to delete the slot?
-        </DialogContentText>
+        <DialogContentText>Do you really want to delete the slot?</DialogContentText>
       </DialogContent>
       <DialogActions>
         <Button onClick={() => setOpen(false)}>Cancel</Button>
-        <Button onClick={() => handleDelete()} autoFocus>
-          Delete
-        </Button>
+        <Button onClick={handleDelete} autoFocus>Delete</Button>
       </DialogActions>
     </Dialog>
   </>);

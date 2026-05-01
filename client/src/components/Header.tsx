@@ -1,7 +1,6 @@
-import React from "react";
-
 const KeyhookLogo = () => (
   <svg width="140" height="55" viewBox="58.87 78.91 770.03 242.2" xmlns="http://www.w3.org/2000/svg" fill="none">
+    <title>Keyhook Logo</title>
     <path d="M293.94 234.51L266.809 198.186V234.51H247.817V129H266.809V190.497L290.624 158.09H312.63L285.349 193.362L317.304 234.51H293.94Z" fill="#232A59"/>
     <path d="M379.408 188.99C377.451 179.042 370.667 173.314 360.417 173.314C351.072 173.314 343.687 179.192 341.425 188.99H379.408ZM398.101 203.761H341.425C344.14 214.011 352.582 219.437 363.131 219.437C371.874 219.437 377.902 214.765 380.164 211.9L395.537 220.946C389.358 229.537 377.602 236.469 363.131 236.469C337.808 236.469 321.078 219.589 321.078 196.375C321.078 172.41 339.013 156.281 360.116 156.281C383.177 156.281 401.567 173.615 398.101 203.761Z" fill="#232A59"/>
     <path d="M481.306 158.09L439.554 263.6H419.959L433.976 229.988L402.325 158.09H422.974L442.719 208.586L460.656 158.09H481.306Z" fill="#232A59"/>
@@ -19,7 +18,7 @@ export default function Header() {
       <div className="transition-all duration-500 w-full px-6 sm:px-10 md:px-12 py-4 lg:py-6">
         <div className="mx-auto w-full max-w-4xl">
           <div className="relative flex flex-row items-center justify-between gap-x-6 gap-y-3 leading-none">
-            <a className="h-12 flex-shrink-0 flex items-center" href="https://www.keyhook.com/" target="_blank">
+            <a className="h-12 flex-shrink-0 flex items-center" href="https://www.keyhook.com/" target="_blank" rel="noopener noreferrer">
               <KeyhookLogo/>
             </a>
             <h1 className="text-2xl font-bold" style={{ color: "#232A59" }}>Booking System</h1>

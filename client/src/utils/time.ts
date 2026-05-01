@@ -1,70 +1,70 @@
-import dayjs, { Dayjs } from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
-import localizedFormat from 'dayjs/plugin/localizedFormat';
-import minMax from 'dayjs/plugin/minMax';
-import { Availability, defaultAvailability } from '../types';
-
-dayjs.extend(utc);
-dayjs.extend(timezone);
-dayjs.extend(localizedFormat);
-dayjs.extend(minMax);
+import dayjs from '../lib/dayjs';
+import type { Dayjs } from '../lib/dayjs';
+import type { Availability, AvailabilityDraft } from '../types';
 
 export const localTZ = dayjs.tz.guess();
 
-export function checkBookingDate(date: string, time: string, timezone: string) {
+export const DATE_FORMAT = 'DD/MM/YYYY';
+export const DATETIME_FORMAT = 'DD/MM/YYYY HH:mm';
+export const REFERENCE_DATE = '01/01/2000';
+
+// ── Slot time helpers ─────────────────────────────────────────────────────────
+
+export const getDateByTimezone = (date: string, time: string, timezone: string): Dayjs => 
+  dayjs.tz(`${date} ${time}`, DATETIME_FORMAT, timezone);
+
+export const timeToRefDate = (time: string): Dayjs => 
+  getDateByTimezone(REFERENCE_DATE, time, localTZ);
+
+export function checkBookingDate(date: string, time: string, timezone: string): string {
   try {
-    const str = `${date} ${time}`;
-    const startLocal = dayjs(str, "DD/MM/YYYY HH:mm").tz(timezone);
-    if (startLocal.isBefore(dayjs().tz(localTZ))) { 
-      return 'Cannot book past slot in your local time'; 
-    } else {
-      return '';
-    }
-  } catch (e) {
-      return 'Time parsing error'; 
+    const slotStart = getDateByTimezone(date, time, timezone);
+
+    if (!slotStart.isValid()) return 'Time parsing error';
+    
+    return slotStart.isBefore(dayjs().tz(localTZ))
+      ? 'Cannot book past slot in your local time'
+      : '';
+  } catch {
+    return 'Time parsing error'; 
   }
 }
 
-export function getDateByTimezone (date: string, time: string, timezone: string) {
-  return dayjs(`${date} ${time}`, "DD/MM/YYYY HH:mm").tz(timezone);
-}
-
-export function parseDaysOfWeek(str: string) {
+export function parseDaysOfWeek(str: string): number[] {
   return str?.length ? str.split(';').map(item => (+item)) : [];
 }
 
-export function getTime(date: Dayjs) {
-  return `${date.format('HH')}:${date.format('mm')}`
+export function getTime(date: Dayjs): string {
+  return date.format('HH:mm');
 }
 
-export function checkSlotsIntersection(slot1: defaultAvailability, slot2: defaultAvailability) {
-  const intersectionStart = dayjs.max(
-    getDateByTimezone('15/10/2025', slot1.startTime, localTZ),
-    getDateByTimezone('15/10/2025', slot2.startTime, localTZ)
-  );
-  const intersectionEnd = dayjs.min(
-    getDateByTimezone('15/10/2025', slot1.endTime, localTZ),
-    getDateByTimezone('15/10/2025', slot2.endTime, localTZ)
-  );
+// ── Intersection detection ────────────────────────────────────────────────────
 
-  return intersectionStart.isBefore(intersectionEnd);
+export const checkSlotsIntersection = (slot1: AvailabilityDraft, slot2: AvailabilityDraft): boolean => {
+  const start = dayjs.max(timeToRefDate(slot1.startTime), timeToRefDate(slot2.startTime));
+  const end = dayjs.min(timeToRefDate(slot1.endTime), timeToRefDate(slot2.endTime));
+
+  return start !== null && end !== null && start.isBefore(end);
 }
 
-function getDateWeekDay(dateString: string) {
-  const day = dayjs(dateString, "DD/MM/YYYY").day();
+export const getDateWeekDay = (dateString: string): number => {
+  if (!dateString) return -1;
+  const day = dayjs(dateString, DATE_FORMAT).day();
   return day === 0 ? 7 : day;
 }
 
 const weekDays = ['', 'Mondays', 'Tuesdays', 'Wednesdays', 'Thursdays', 'Fridays', 'Saturdays', 'Sundays'];
 
-export function getIntersectionsList(currentSlot: defaultAvailability, allSlots: Availability[]): Array<string> {
+export const getIntersectionsList = (currentSlot: AvailabilityDraft, allSlots: Availability[]): string[] => {
   const listSet = new Set<string>();
-  
   const slotDaysSet = new Set(currentSlot.daysOfWeek);
   const slotDateWeekDay = getDateWeekDay(currentSlot.selectedDate);
   
   allSlots.forEach(item => {
+    // Skip self-comparison when editing an existing slot
+    if (item.id !== undefined && item.id === currentSlot.id) return;
+
+    // item is a one-off date that falls on a day in currentSlot's recurring days
     if (item.selectedDate) {
       const itemDateWeekDay = getDateWeekDay(item.selectedDate);
       if (slotDaysSet.has(itemDateWeekDay) && checkSlotsIntersection(item, currentSlot)) {
@@ -72,6 +72,7 @@ export function getIntersectionsList(currentSlot: defaultAvailability, allSlots:
       }
     }
 
+    // currentSlot is a one-off date that falls on a day in item's recurring days
     if (currentSlot.selectedDate) {
       const itemDaysSet = new Set(item.daysOfWeek);
       if (itemDaysSet.has(slotDateWeekDay) && checkSlotsIntersection(item, currentSlot)) {
@@ -79,9 +80,12 @@ export function getIntersectionsList(currentSlot: defaultAvailability, allSlots:
       }
     }
     
+    // Both are recurring and share at least one day
     const daysIntersection = item.daysOfWeek.filter(number => slotDaysSet.has(number));
     if (daysIntersection.length && checkSlotsIntersection(item, currentSlot)) {
-      daysIntersection.forEach(number => listSet.add(`${weekDays[number]} (${item.startTime}-${item.endTime})`));
+      daysIntersection.forEach(number => { 
+        listSet.add(`${weekDays[number]} (${item.startTime}-${item.endTime})`); 
+      });
     }
   });
 
