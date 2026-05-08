@@ -15,7 +15,7 @@ type RequestOptions = {
   signal?: AbortSignal
 };
 
-// Users ─────────────────────────────────────────────────────────────────────
+// Users
 
 export async function getUsers(options: RequestOptions = {}): Promise<User[]> {
   return (await api.get<User[]>('/users', { signal: options.signal })).data;
@@ -25,7 +25,7 @@ export async function createUser(name: string, role: Role): Promise<User> {
   return (await api.post<User>('/users', { name, role })).data;
 }
 
-//Availability ──────────────────────────────────────────────────────────────
+//Availability
 
 export async function getAvailability(
   options: RequestOptions = {}
@@ -34,7 +34,7 @@ export async function getAvailability(
 }
 
 export async function createAvailability(
-  slot: AvailabilityDraft & { managerId: number; timezone: string },
+  slot: AvailabilityDraft & { managerId: number; timeZone: string },
 ): Promise<ServerAvailability> {
   return (await api.post<ServerAvailability>('/availability', {
     ...slot,
@@ -43,7 +43,7 @@ export async function createAvailability(
 }
 
 export async function editAvailability(
-  slot: AvailabilityDraft & { managerId?: number; timezone?: string },
+  slot: AvailabilityDraft & { managerId?: number; timeZone?: string },
 ): Promise<ServerAvailability> {
   return (await api.put<ServerAvailability>(`/availability/${slot.id}`, {
     ...slot,
@@ -60,7 +60,7 @@ export async function deleteAvailability(
   })).data;
 }
 
-// Bookings ──────────────────────────────────────────────────────────────────
+// Bookings
 
 export async function getBookings(options: RequestOptions = {}): Promise<Booking[]> {
   return (await api.get<Booking[]>('/bookings', { signal: options.signal })).data;
@@ -70,9 +70,9 @@ export async function bookSlot(
   slotId: number, 
   bookDate: string, 
   tenantId: number, 
-  tenantTimezone: string
+  tenantTimeZone: string
 ): Promise<Booking> {
-  return (await api.post<Booking>('/book', { slotId, bookDate, tenantId, tenantTimezone })).data;
+  return (await api.post<Booking>('/book', { slotId, bookDate, tenantId, tenantTimeZone })).data;
 }
 
 export async function cancelBooking(bookingId: number, cancelledBy: number): Promise<Booking> {

@@ -12,8 +12,8 @@ export async function seedIfEmpty(): Promise<void> {
   ]);
 
   await Availability.bulkCreate([
-    { managerId: mike.id, daysOfWeek: '1;5', selectedDate: '', startTime: '10:00', endTime: '12:00', timezone: 'Pacific/Auckland' },
-    { managerId: jane.id, daysOfWeek: '3',   selectedDate: '', startTime: '14:00', endTime: '16:00', timezone: 'Pacific/Auckland' },
-    { managerId: mike.id, daysOfWeek: '5',   selectedDate: '', startTime: '13:00', endTime: '14:00', timezone: 'Pacific/Auckland' },
+    { managerId: mike.id, daysOfWeek: '1;5', selectedDate: '', startTime: '10:00', endTime: '12:00', timeZone: 'Pacific/Auckland' },
+    { managerId: jane.id, daysOfWeek: '3',   selectedDate: '', startTime: '14:00', endTime: '16:00', timeZone: 'Pacific/Auckland' },
+    { managerId: mike.id, daysOfWeek: '5',   selectedDate: '', startTime: '13:00', endTime: '14:00', timeZone: 'Pacific/Auckland' },
   ]);
 }

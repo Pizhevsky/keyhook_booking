@@ -18,7 +18,7 @@ export interface ServerAvailability {
   selectedDate: string 
   startTime: string
   endTime: string
-  timezone: string
+  timeZone: string
 }
 
 export interface Availability extends Omit<ServerAvailability, 'daysOfWeek'> {

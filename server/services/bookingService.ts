@@ -13,7 +13,7 @@ export async function getAllBookings(includeAll = false) {
 }
 
 export async function createBooking(input: CreateBookingInput) {
-  const { slotId, bookDate, tenantId, tenantTimezone } = input;
+  const { slotId, bookDate, tenantId, tenantTimeZone } = input;
 
   return withTransaction(async (t: Transaction) => {
     // Invariant 4 — only tenants can book
@@ -30,7 +30,7 @@ export async function createBooking(input: CreateBookingInput) {
     assertSlotOccursOnDate(slot, bookDate);
 
     // Invariant 2 — slot must not be in the past
-    assertNotInPast(bookDate, slot.startTime, slot.timezone, tenantTimezone);
+    assertNotInPast(bookDate, slot.startTime, slot.timeZone, tenantTimeZone);
 
     // Invariant 3 — one active booking per slot per date.
     const existing = await Booking.findOne({
@@ -88,15 +88,15 @@ export function assertNotInPast(
   bookDate: string,
   startTime: string,
   slotTimezone: string,
-  tenantTimezone?: string,
+  tenantTimeZone?: string,
 ): void {
-  if (!tenantTimezone) return;
+  if (!tenantTimeZone) return;
 
   try {
     const slotStart = dayjs.tz(`${bookDate} ${startTime}`, DATETIME_FORMAT, slotTimezone);
     if (!slotStart.isValid()) return;
 
-    const nowInTenantTz = dayjs().tz(tenantTimezone);
+    const nowInTenantTz = dayjs().tz(tenantTimeZone);
     if (slotStart.isBefore(nowInTenantTz)) {
       throw new AppError(400, 'Slot is in the past for tenant timezone', 'SLOT_IN_PAST');
     }

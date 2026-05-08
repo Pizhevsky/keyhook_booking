@@ -3,8 +3,7 @@ import sequelize from './lib/sequelize';
 import { BOOKING_STATUS } from './types';
 import type { UserRole, BookingStatus } from './types';
 
-
-// ── User ──────────────────────────────────────────────────────────────────────
+// User
 export interface UserAttributes { 
   id: number
   name: string
@@ -30,7 +29,7 @@ User.init({
   } 
 }, { sequelize, tableName: 'users', timestamps: false });
 
-// ── Availability ──────────────────────────────────────────────────────────────
+// Availability
 export interface AvailabilityAttributes { 
   id: number
   managerId: number
@@ -38,7 +37,7 @@ export interface AvailabilityAttributes {
   daysOfWeek: string
   startTime: string
   endTime: string
-  timezone: string
+  timeZone: string
 }
 type AvailabilityCreationAttributes = Optional<AvailabilityAttributes, 'id'>
 
@@ -52,7 +51,7 @@ export class Availability
   declare daysOfWeek: string; 
   declare startTime: string; 
   declare endTime: string;
-  declare timezone: string;
+  declare timeZone: string;
 }
 Availability.init({ 
   id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true }, 
@@ -61,10 +60,10 @@ Availability.init({
   daysOfWeek: { type: DataTypes.STRING(20), allowNull: false }, 
   startTime: { type: DataTypes.STRING(5), allowNull: false }, 
   endTime: { type: DataTypes.STRING(5), allowNull: false },
-  timezone: { type: DataTypes.STRING(50), allowNull: false } 
+  timeZone: { type: DataTypes.STRING(50), allowNull: false } 
 }, { sequelize, tableName: 'availability', timestamps: false });
 
-// ── Booking ───────────────────────────────────────────────────────────────────
+// Booking
 export interface BookingAttributes { 
   id: number
   slotId: number
@@ -104,14 +103,14 @@ Booking.init({
   cancelledAt: { type: DataTypes.DATE, allowNull: true, defaultValue: null }
 }, { sequelize, tableName: 'bookings', timestamps: false });
 
-// ── Associations ──────────────────────────────────────────────────────────────
+// Associations
 User.hasMany(Availability, { foreignKey: 'managerId', as: 'availabilities' });
 Availability.belongsTo(User, { foreignKey: 'managerId', as: 'manager' });
 Availability.hasMany(Booking, { foreignKey: 'slotId', as: 'bookings', onDelete: 'CASCADE' });
 Booking.belongsTo(Availability, { foreignKey: 'slotId', as: 'slot' });
 Booking.belongsTo(User, { foreignKey: 'tenantId', as: 'tenant' });
 
-// ── Schema setup ──────────────────────────────────────────────────────────────
+// Schema setup
 export async function syncModels(): Promise<void> {
   await sequelize.sync();
   await sequelize.query(`

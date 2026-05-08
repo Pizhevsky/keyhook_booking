@@ -8,17 +8,17 @@ export const DATE_FORMAT = 'DD/MM/YYYY';
 export const DATETIME_FORMAT = 'DD/MM/YYYY HH:mm';
 export const REFERENCE_DATE = '01/01/2000';
 
-// ── Slot time helpers ─────────────────────────────────────────────────────────
+// Slot time helpers
 
-export const getDateByTimezone = (date: string, time: string, timezone: string): Dayjs => 
-  dayjs.tz(`${date} ${time}`, DATETIME_FORMAT, timezone);
+export const getDateByTimeZone = (date: string, time: string, timeZone: string): Dayjs => 
+  dayjs.tz(`${date} ${time}`, DATETIME_FORMAT, timeZone);
 
 export const timeToRefDate = (time: string): Dayjs => 
-  getDateByTimezone(REFERENCE_DATE, time, localTZ);
+  getDateByTimeZone(REFERENCE_DATE, time, localTZ);
 
-export function checkBookingDate(date: string, time: string, timezone: string): string {
+export function checkBookingDate(date: string, time: string, timeZone: string): string {
   try {
-    const slotStart = getDateByTimezone(date, time, timezone);
+    const slotStart = getDateByTimeZone(date, time, timeZone);
 
     if (!slotStart.isValid()) return 'Time parsing error';
     
@@ -38,7 +38,7 @@ export function getTime(date: Dayjs): string {
   return date.format('HH:mm');
 }
 
-// ── Intersection detection ────────────────────────────────────────────────────
+// Intersection detection
 
 export const checkSlotsIntersection = (slot1: AvailabilityDraft, slot2: AvailabilityDraft): boolean => {
   const start = dayjs.max(timeToRefDate(slot1.startTime), timeToRefDate(slot2.startTime));

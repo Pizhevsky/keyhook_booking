@@ -14,7 +14,7 @@ export async function getAllAvailability() {
 }
 
 export async function createAvailability(input: CreateAvailabilityInput): Promise<Availability> {
-  const { managerId, selectedDate = '', daysOfWeek = '', startTime, endTime, timezone } = input;
+  const { managerId, selectedDate = '', daysOfWeek = '', startTime, endTime, timeZone } = input;
 
   const manager = await User.findOne({ where: { id: managerId, role: 'manager' } });
   if (!manager) throw new AppError(404, 'Manager not found', 'MANAGER_NOT_FOUND');
@@ -25,7 +25,7 @@ export async function createAvailability(input: CreateAvailabilityInput): Promis
   if (duplicate) throw new AppError(409, 'Duplicate slot', 'DUPLICATE_SLOT');
 
   const created = await Availability.create({
-    managerId, selectedDate, daysOfWeek, startTime, endTime, timezone,
+    managerId, selectedDate, daysOfWeek, startTime, endTime, timeZone,
   });
 
   broadcast({ type: 'AVAILABILITY_CREATED', payload: created.toJSON() });
@@ -48,7 +48,7 @@ export async function updateAvailability(id: number, input: UpdateAvailabilityIn
     daysOfWeek: input.daysOfWeek ?? slot.daysOfWeek,
     startTime: input.startTime ?? slot.startTime,
     endTime: input.endTime ?? slot.endTime,
-    timezone: input.timezone ?? slot.timezone,
+    timeZone: input.timeZone ?? slot.timeZone,
   });
 
   broadcast({ type: 'AVAILABILITY_UPDATED', payload: slot.toJSON() });

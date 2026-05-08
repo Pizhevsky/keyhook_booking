@@ -16,7 +16,7 @@ export interface CreateAvailabilityBody {
   daysOfWeek?: string
   startTime: string
   endTime: string
-  timezone: string
+  timeZone: string
 }
 
 export interface UpdateAvailabilityBody {
@@ -25,14 +25,14 @@ export interface UpdateAvailabilityBody {
   daysOfWeek?: string
   startTime?: string
   endTime?: string
-  timezone?: string
+  timeZone?: string
 }
 
 export interface CreateBookingBody {
   slotId?: number
   bookDate?: string
   tenantId?: number
-  tenantTimezone?: string
+  tenantTimeZone?: string
 }
 
 // Input interfaces
@@ -48,7 +48,7 @@ export interface CreateAvailabilityInput {
   daysOfWeek?: string
   startTime: string
   endTime: string
-  timezone: string
+  timeZone: string
 }
 
 export interface UpdateAvailabilityInput {
@@ -57,14 +57,14 @@ export interface UpdateAvailabilityInput {
   daysOfWeek?: string
   startTime?: string
   endTime?: string
-  timezone?: string
+  timeZone?: string
 }
 
 export interface CreateBookingInput {
   slotId: number
   bookDate: string
   tenantId: number
-  tenantTimezone?: string
+  tenantTimeZone?: string
 }
 
 // Helpers
@@ -95,9 +95,9 @@ function isValidDaysOfWeek(v: string): boolean {
     .every((day) => /^[1-7]$/.test(day));
 }
 
-function isValidTimezone(timezone: string): boolean {
+function isValidTimezone(timeZone: string): boolean {
   try {
-    return dayjs.tz(new Date(), timezone).isValid();
+    return dayjs.tz(new Date(), timeZone).isValid();
   } catch {
     return false;
   }
@@ -154,7 +154,7 @@ export const validateCreateUser = validateWith<CreateUserBody, CreateUserInput>(
 );
  
 export const validateCreateAvailability = validateWith<CreateAvailabilityBody, CreateAvailabilityInput>(
-  ({ managerId, selectedDate, daysOfWeek, startTime, endTime, timezone }) => {
+  ({ managerId, selectedDate, daysOfWeek, startTime, endTime, timeZone }) => {
     if (!isPositiveInt(managerId))
       throw new AppError(400, 'managerId must be a positive integer', 'INVALID_MANAGER_ID');
 
@@ -164,8 +164,8 @@ export const validateCreateAvailability = validateWith<CreateAvailabilityBody, C
     if (!isHHmm(endTime))
       throw new AppError(400, 'endTime must be in HH:mm format', 'INVALID_END_TIME');
 
-    if (!isNonEmptyString(timezone) || !isValidTimezone(timezone)) 
-      throw new AppError(400, 'timezone must be a valid IANA timezone', 'INVALID_TIMEZONE');
+    if (!isNonEmptyString(timeZone) || !isValidTimezone(timeZone)) 
+      throw new AppError(400, 'timeZone must be a valid IANA timezone', 'INVALID_TIMEZONE');
 
     if (selectedDate && !isNonEmptyString(selectedDate) && !isValidDate(selectedDate))
         throw new AppError(400, `selectedDate must be in ${DATE_FORMAT} format`, 'INVALID_SELECTED_DATE');
@@ -178,12 +178,12 @@ export const validateCreateAvailability = validateWith<CreateAvailabilityBody, C
     
     assertStartBeforeEnd(startTime, endTime);
 
-    return { managerId, selectedDate, daysOfWeek, startTime, endTime, timezone };
+    return { managerId, selectedDate, daysOfWeek, startTime, endTime, timeZone };
   },
 );
  
 export const validateUpdateAvailability = validateWith<UpdateAvailabilityBody, UpdateAvailabilityInput>(
-  ({ managerId, selectedDate, daysOfWeek, startTime, endTime, timezone }) => {
+  ({ managerId, selectedDate, daysOfWeek, startTime, endTime, timeZone }) => {
     if (managerId && !isPositiveInt(managerId))
       throw new AppError(400, 'managerId must be a positive integer', 'INVALID_MANAGER_ID');
 
@@ -193,8 +193,8 @@ export const validateUpdateAvailability = validateWith<UpdateAvailabilityBody, U
     if (endTime && !isHHmm(endTime))
       throw new AppError(400, 'endTime must be in HH:mm format', 'INVALID_END_TIME');
 
-    if (timezone !== undefined && (!isNonEmptyString(timezone) || !isValidTimezone(timezone)))
-        throw new AppError(400, 'timezone must be a valid IANA timezone', 'INVALID_TIMEZONE');
+    if (timeZone !== undefined && (!isNonEmptyString(timeZone) || !isValidTimezone(timeZone)))
+        throw new AppError(400, 'timeZone must be a valid IANA timezone', 'INVALID_TIMEZONE');
 
     if (selectedDate && !isNonEmptyString(selectedDate) && !isValidDate(selectedDate))
         throw new AppError(400, `selectedDate must be in ${DATE_FORMAT} format`, 'INVALID_SELECTED_DATE');
@@ -205,12 +205,12 @@ export const validateUpdateAvailability = validateWith<UpdateAvailabilityBody, U
     if (startTime && endTime)
       assertStartBeforeEnd(startTime, endTime);
 
-    return { managerId, selectedDate, daysOfWeek, startTime, endTime, timezone };
+    return { managerId, selectedDate, daysOfWeek, startTime, endTime, timeZone };
   },
 );
  
 export const validateCreateBooking = validateWith<CreateBookingBody, CreateBookingInput>(
-  ({ slotId, bookDate, tenantId, tenantTimezone }) => {
+  ({ slotId, bookDate, tenantId, tenantTimeZone }) => {
     if (!isPositiveInt(slotId))
       throw new AppError(400, 'slotId must be a positive integer', 'INVALID_SLOT_ID');
 
@@ -223,9 +223,9 @@ export const validateCreateBooking = validateWith<CreateBookingBody, CreateBooki
     if (!dayjs(bookDate, DATE_FORMAT, true).isValid())
       throw new AppError(400, `bookDate must be in ${DATE_FORMAT} format`, 'INVALID_BOOK_DATE');
 
-    if (tenantTimezone && !isNonEmptyString(tenantTimezone))
-      throw new AppError(400, 'tenantTimezone must be a non-empty string if provided', 'INVALID_TENANT_TIMEZONE');
+    if (tenantTimeZone && !isNonEmptyString(tenantTimeZone))
+      throw new AppError(400, 'tenantTimeZone must be a non-empty string if provided', 'INVALID_TENANT_TIMEZONE');
 
-    return { slotId, bookDate, tenantId, tenantTimezone };
+    return { slotId, bookDate, tenantId, tenantTimeZone };
   },
 );

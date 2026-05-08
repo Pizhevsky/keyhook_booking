@@ -4,7 +4,7 @@ import { bookSlot } from '../services/apiService';
 import { handleApiAction, showErrorToast } from '../services/errorService';
 import type { Availability, ScheduleProps } from '../types';
 import { useAppDispatch, addBooking } from '../store';
-import { checkBookingDate, getDateByTimezone, localTZ } from '../utils/time';
+import { checkBookingDate, getDateByTimeZone, localTZ } from '../utils/time';
 import BookingCancel from './BookingCancel';
 
 export default function TenantSchedule({
@@ -17,7 +17,7 @@ export default function TenantSchedule({
   const { user } = useUser();
   
   const handleBook = async (slot: Availability) => {
-    const check = checkBookingDate(currentDateString, slot.startTime, slot.timezone);
+    const check = checkBookingDate(currentDateString, slot.startTime, slot.timeZone);
     if (check) {
       showErrorToast(check);
       return;
@@ -61,9 +61,9 @@ export default function TenantSchedule({
                     <Avatar>{manager ? manager.name[0] : 'M'}</Avatar>
                     <div>
                       <div className="font-medium">
-                        <span>{getDateByTimezone(currentDateString, slot.startTime, slot.timezone).format('HH:mm')}</span>
+                        <span>{getDateByTimeZone(currentDateString, slot.startTime, slot.timeZone).format('HH:mm')}</span>
                         <span>&nbsp;-&nbsp;</span>
-                        <span>{getDateByTimezone(currentDateString, slot.endTime, slot.timezone).format('HH:mm')}</span>
+                        <span>{getDateByTimeZone(currentDateString, slot.endTime, slot.timeZone).format('HH:mm')}</span>
                       </div>
                       <div className="text-sm text-gray-500">{manager?.name}</div>
                     </div>

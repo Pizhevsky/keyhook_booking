@@ -38,7 +38,7 @@ export default function TimeSlotCreate({ currentDateString, allUserSlots }: Time
     const body = {
       ...slot,
       managerId: user.id,
-      timezone: localTZ,
+      timeZone: localTZ,
       selectedDate: !slot.selectedDate && slot.daysOfWeek?.length === 0 
           ? currentDateString 
           : slot.selectedDate
