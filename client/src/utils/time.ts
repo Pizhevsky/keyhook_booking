@@ -10,8 +10,19 @@ export const REFERENCE_DATE = '01/01/2000';
 
 // Slot time helpers
 
-export const getDateByTimeZone = (date: string, time: string, timeZone: string): Dayjs => 
-  dayjs.tz(`${date} ${time}`, DATETIME_FORMAT, timeZone);
+export const isValidTimeZone = (timeZone: string | undefined): timeZone is string => {
+  if (!timeZone) return false;
+
+  try {
+    Intl.DateTimeFormat('en-US', { timeZone });
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+export const getDateByTimeZone = (date: string, time: string, timeZone: string | undefined): Dayjs => 
+  dayjs.tz(`${date} ${time}`, DATETIME_FORMAT, isValidTimeZone(timeZone) ? timeZone : localTZ);
 
 export const timeToRefDate = (time: string): Dayjs => 
   getDateByTimeZone(REFERENCE_DATE, time, localTZ);

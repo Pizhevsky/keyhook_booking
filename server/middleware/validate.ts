@@ -97,7 +97,8 @@ function isValidDaysOfWeek(v: string): boolean {
 
 function isValidTimezone(timeZone: string): boolean {
   try {
-    return dayjs.tz(new Date(), timeZone).isValid();
+    Intl.DateTimeFormat('en-US', { timeZone });
+    return true;
   } catch {
     return false;
   }
@@ -167,10 +168,10 @@ export const validateCreateAvailability = validateWith<CreateAvailabilityBody, C
     if (!isNonEmptyString(timeZone) || !isValidTimezone(timeZone)) 
       throw new AppError(400, 'timeZone must be a valid IANA timezone', 'INVALID_TIMEZONE');
 
-    if (selectedDate && !isNonEmptyString(selectedDate) && !isValidDate(selectedDate))
+    if (selectedDate && (!isNonEmptyString(selectedDate) || !isValidDate(selectedDate)))
         throw new AppError(400, `selectedDate must be in ${DATE_FORMAT} format`, 'INVALID_SELECTED_DATE');
 
-    if (daysOfWeek && !isNonEmptyString(daysOfWeek) && !isValidDaysOfWeek(daysOfWeek))
+    if (daysOfWeek && (!isNonEmptyString(daysOfWeek) || !isValidDaysOfWeek(daysOfWeek)))
         throw new AppError(400, 'daysOfWeek must contain day numbers 1-7 separated by ;', 'INVALID_DAYS_OF_WEEK');
 
     if (!selectedDate && !daysOfWeek)
@@ -196,10 +197,10 @@ export const validateUpdateAvailability = validateWith<UpdateAvailabilityBody, U
     if (timeZone !== undefined && (!isNonEmptyString(timeZone) || !isValidTimezone(timeZone)))
         throw new AppError(400, 'timeZone must be a valid IANA timezone', 'INVALID_TIMEZONE');
 
-    if (selectedDate && !isNonEmptyString(selectedDate) && !isValidDate(selectedDate))
+    if (selectedDate && (!isNonEmptyString(selectedDate) || !isValidDate(selectedDate)))
         throw new AppError(400, `selectedDate must be in ${DATE_FORMAT} format`, 'INVALID_SELECTED_DATE');
 
-    if (daysOfWeek && !isNonEmptyString(daysOfWeek) && !isValidDaysOfWeek(daysOfWeek))
+    if (daysOfWeek && (!isNonEmptyString(daysOfWeek) || !isValidDaysOfWeek(daysOfWeek)))
         throw new AppError(400, 'daysOfWeek must contain day numbers 1-7 separated by ;', 'INVALID_DAYS_OF_WEEK');
     
     if (startTime && endTime)
@@ -223,8 +224,8 @@ export const validateCreateBooking = validateWith<CreateBookingBody, CreateBooki
     if (!dayjs(bookDate, DATE_FORMAT, true).isValid())
       throw new AppError(400, `bookDate must be in ${DATE_FORMAT} format`, 'INVALID_BOOK_DATE');
 
-    if (tenantTimeZone && !isNonEmptyString(tenantTimeZone))
-      throw new AppError(400, 'tenantTimeZone must be a non-empty string if provided', 'INVALID_TENANT_TIMEZONE');
+    if (tenantTimeZone && (!isNonEmptyString(tenantTimeZone) || !isValidTimezone(tenantTimeZone)))
+      throw new AppError(400, 'tenantTimeZone must be a valid IANA timezone if provided', 'INVALID_TENANT_TIMEZONE');
 
     return { slotId, bookDate, tenantId, tenantTimeZone };
   },

@@ -101,10 +101,6 @@ export async function handleApiAction<T>(
 
     const apiError = extractApiActionError(error, errorMessage);
 
-    if (logLabel) {
-      console.error(`${logLabel}:`, error);
-    }
-
     showErrorToast(apiError.message);
 
     return { ok: false, error: apiError };
